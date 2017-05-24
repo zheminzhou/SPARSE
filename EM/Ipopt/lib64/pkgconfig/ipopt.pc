@@ -1,0 +1,12 @@
+prefix=/home/thm/Software/CoinIpopt/build
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib64
+includedir=${prefix}/include/coin
+
+Name: IPOPT
+Description: Interior Point Optimizer
+URL: https://projects.coin-or.org/Ipopt
+Version: 3.11.0
+Libs: -L${libdir} -lipopt -llapack -lblas -lm  -ldl
+Cflags: -I${includedir}
+Requires: coinmumps 

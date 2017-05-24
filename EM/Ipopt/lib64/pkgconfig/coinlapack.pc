@@ -1,0 +1,11 @@
+prefix=/home/thm/Software/CoinIpopt/build
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib64
+
+Name: Lapack
+Description: Linear algebra package
+URL: https://projects.coin-or.org/BuildTools
+Version: 1.4.0
+Libs: -L${libdir} -lcoinlapack -lblas   -L/usr/lib64/gcc/x86_64-suse-linux/4.7 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../x86_64-suse-linux/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../.. -lgfortran -lm -lgcc_s -lquadmath
+Cflags:
+Requires: 
