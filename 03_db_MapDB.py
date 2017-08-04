@@ -9,28 +9,24 @@ def create_db(data) :
     dbname = '{0}.{1}'.format(prefix, id)
     seq_tax = []
     for g in genomes :
-        if ':' in g[1] :
-            if g[1].upper().endswith('.GZ') :
-                subprocess.Popen('wget -O {0}.tmp.gz {1}'.format(dbname, g[1]).split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE).communicate()
-                fname = '{0}.tmp.gz'.format(dbname)
-            else :
-                subprocess.Popen('wget -O {0}.tmp {1}'.format(dbname, g[1]).split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE).communicate()
-                fname = '{0}.tmp'.format(dbname)
+        if os.path.isfile(g[2]) :
+            fname = g[2]
         else :
-            fname = g[1]
-        show_cmd = 'zcat' if fname.upper().endswith('.GZ') else 'cat'
+            fname = g[3].rsplit('/', 1)[-1]
+            utils.get_file(g[3], fname)
+        show_cmd = 'gzip -cd' if fname.upper().endswith('.GZ') else 'cat'
         show_run = subprocess.Popen("{0} {1}|tee -a '{2}'|grep '^>'".format(show_cmd, fname, dbname), shell=True, stdout=subprocess.PIPE)
         for line in iter(show_run.stdout.readline, r'') :
             seqname = line[1:].strip().split()[0]
             seq_tax.append([seqname, g[0]])
-        if g[1] != fname :
+        if g[2] != fname :
             os.unlink(fname)
-    with gzip.open('{0}.taxa.gz'.format(dbname), 'w') as fout :
-        for s, b in seq_tax :
-            fout.write('{0}\t{1}\n'.format(s, b))
     r = subprocess.Popen('{0} -o 3 {1} {1}'.format(bt_build, dbname).split(), stdout=subprocess.PIPE)
     r.communicate()
     if r.returncode == 0 :
+        with gzip.open('{0}.taxa.gz'.format(dbname), 'w') as fout :
+            for s, b in seq_tax :
+                fout.write('{0}\t{1}\n'.format(s, b))
         subprocess.Popen('gzip {0}'.format(dbname).split()).communicate()
     else :
         for fname in glob.glob(dbname + '.*') :
@@ -40,35 +36,57 @@ def create_db(data) :
 
 if __name__ == '__main__' :
     params = utils.load_params(sys.argv)
-    db_columns = [c for c in params['db_columns'] + params['metadata_columns'] + params['taxa_columns'] if c not in ('file_path', 'url_path', 'sha256')]
+    db_columns = [c for c in params['db_columns'] + params['metadata_columns'] + params['taxa_columns'] if c not in ('sha256')]
     
-    existing_data = os.path.join(params['dbname'], 'db_metadata.msg')
-    assert existing_data, 'no data in the database.'
-    data = pd.read_msgpack(existing_data)
-    
-    if 'ref_size' not in params :
-        params['ref_size'] = params['default_ref_size']
+    data = utils.load_database(**params)
     
     if 'seqlist' not in params  :
-        # No seqlist. Will generate a table of candidates. Modify and feed them back to create the database.
-        representative_level = params['representative_level']
-        
-        dd = [d.split('.') for d in data['barcode'].tolist()]
-        size = data['size'].as_matrix().astype(int)
-        data['For_MapDB'] = ['T' if s < int(params['ref_size']) and d[representative_level][1:] == d[-1][1:] else 'F' for d, s in zip(dd, size)]
-        pd.DataFrame(data, columns=['For_MapDB'] + db_columns).to_csv(sys.stdout, sep='\t')
+        if 'update' in params :
+            tmp = {v['MapDB']:v for v in params['default_bowtie'] }
+            mapdb = tmp[params['update']]
+        else :
+            mapdb = { key:params[key] for key in db_columns + ['MapDB', 'tag', 'min', 'max', 'group'] if key in params }
+        assert 'MapDB' in mapdb, 'update or MapDB field is required'
+        for fld, value in mapdb.iteritems() :
+            if fld in db_columns :
+                data = data[ data[fld].isin(value.split(',')) ]
+            elif fld == 'min' :
+                data = data[ data['size'].astype(int) >= int(value) ]
+            elif fld == 'max' :
+                data = data[ data['size'].astype(int) <= int(value) ]
+            elif fld == 'group' :
+                data = data[ data['barcode'].str.contains(value) ]
+            elif fld == 'tag' :
+                data = data.reset_index(drop=True)
+                barcodes = pd.DataFrame(data['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist(), columns=params['barcode_tag'])
+                
+                for f in value.split(';') :
+                    f = f.strip()
+                    g1, g2 = f[0], f[-1]
+                    if f.find('==') > 0 :
+                        barcodes = barcodes[barcodes[g1] == barcodes[g2]]
+                    else :
+                        barcodes = barcodes[barcodes[g1] != barcodes[g2]]
+                data = data.loc[barcodes.index].reset_index(drop=True)
+        pd.DataFrame(data, columns=db_columns).to_csv(sys.stdout, sep='\t', index=False)
     else :
-        mapdb = params['default_MapDB'] if 'MapDB' not in params else params['MapDB']
-        mapdb = os.path.join(params['bowtie_db'], mapdb.rsplit('/', 1)[-1])
-        start_id = 0
-        
-        if params['seqlist'] == 'stdin' :
+        if params['seqlist'] in ('stdin', '-', '') :
             fin = sys.stdin
         else :
             fin = open(params['seqlist'])
         glist = pd.read_csv(fin, delimiter='\t', dtype='str')
         fin.close()
-        indices = {i:1 for i in glist.query("For_MapDB == 'T'")['index'].tolist()}
+        
+        if 'update' in params :
+            mapdb = params['update']
+            if 'mode' not in params :
+                params['mode'] = 'append'
+        else :
+            mapdb = params['MapDB']
+        mapdb = os.path.join(params['bowtie_db'], mapdb)
+        start_id = 0
+        
+        indices = {i:1 for i in glist['index'].tolist()}
         
         if len(glob.glob(mapdb + '.*')) > 0 :
             assert params.get('mode', '') in ('overwrite', 'append'), 'Old database with same name present. You have to use a new name with "MapDB=", or choose between "mode=overwrite" and "mode=append".'
@@ -83,31 +101,32 @@ if __name__ == '__main__' :
                     with gzip.open(fname) as fin :
                         for line in fin :
                             indices[line.strip().split()[1]] = 2
-        
-        data = data[['index', 'file_path', 'size']].loc[data['index'].isin([i for i, t in indices.iteritems() if t == 1])]
-        data = data.as_matrix()[np.argsort(-data['size'].as_matrix().astype(int))]
-        min_file_num = int(np.ceil(np.sum(data.T[2].astype(float))/3800000000))
+        data = data.set_index('index', drop=False)
+        data['size'] = data['size'].astype(int)
+        data = data.loc[[i for i, t in indices.iteritems() if t == 1]].sort_values(by=['size'], ascending=[False])
+        min_file_num = int(np.ceil(np.sum(data['size']).astype(float)/3800000000))
         
         buckets = [[0, []] for n in xrange(min_file_num)]
         id = -1
-        for index, file_link, size in data :
+        for index, size, file_path, url_path in data[['index', 'size', 'file_path', 'url_path']].as_matrix() :
             size, done = int(size), 0
-            for id in range(id+1, len(buckets)) + range(id) :
+            for id in range(id+1, len(buckets)) + range(id+1) :
                 b = buckets[id]
                 if b[0] + size <= 3800000000 :
                     b[0] += size
-                    b[1].append([index, file_link, size])
+                    b[1].append([index, size, file_path, url_path])
                     done = 1
                     break
             if done == 0 :
-                buckets.append([size, [[index, file_link, size]]])
-        with open(mapdb + '.info', 'w') as fout :
-            for id, bucket in enumerate(buckets) :
-                for b,f,s in bucket[1] :
-                    fout.write('{0}\t{1}\n'.format(b, id+start_id))
-        pool = Pool(params['n_thread'])
+                buckets.append([size, [[index, size, file_path, url_path]]])
+        pool = Pool(min(params['n_thread'], len(buckets)))
         result = pool.imap_unordered(create_db, [[params['bowtie2_build'], mapdb, start_id + id, bucket[1]] for id, bucket in enumerate(buckets)])
         for r in result :
             if r[2] != 0 :
                 print 'Database {0}.{1} FAILED with code {2}!'.format(*r)
+
+        with open(mapdb + '.info', 'w') as fout :
+            for id, bucket in enumerate(buckets) :
+                for b,f,s in bucket[1] :
+                    fout.write('{0}\t{1}\n'.format(b, id+start_id))
         print 'Done'

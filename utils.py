@@ -1,6 +1,82 @@
 # utils.py
 
-import os, sys, subprocess, ujson as json, numpy as np
+import os, sys, subprocess, ujson as json, numpy as np, urllib2, pandas as pd
+import contextlib, time
+
+def load_database(**params) :
+    exist_db = os.path.join(params['dbname'], 'db_metadata.msg')
+    db_columns = params['db_columns'] + params['metadata_columns'] + params['taxa_columns']
+    data = pd.DataFrame(pd.read_msgpack(exist_db), columns = db_columns).fillna('-').astype(str)
+    if 'deleted' in params :
+        return data
+    else :
+        return data[data.get('deleted', '-') == '-']
+
+
+try :
+    import capnp
+    capnp.remove_import_hook()
+    
+    def run_mash(data) :
+        msh_file, ref_msh, n_thread, params = data
+
+        minihash = capnp.load('minihash.capnp')
+        msh = minihash.MinHash.read(open(msh_file,'r')).to_dict()
+        size = msh['referenceList']['references'][0]['length64']
+
+        neighbors = []
+        if ref_msh is None :
+            mash_db, sub_db_level = params['mash_db'], params['representative_level']
+            report_neighbor, deep_search = params['barcode_dist'][0]*1.2, params['barcode_dist'][max(sub_db_level-1, 0)]
+
+            init_dbs = [ os.path.join(mash_db, msh_db['name']) for msh_db in params['default_mash'] if size >= msh_db['min'] and size <= msh_db['max'] ]
+
+            msh_dbs = []
+            for default_db in init_dbs :
+                if os.path.exists(default_db) :
+                    msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(default_db, msh_file, n_thread, **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+                    for line in iter(msh_run.stdout.readline, r'') :
+                        part = line.strip().split()
+                        dist = float(part[2])
+                        if dist <= deep_search :
+                            msh_dbs.append(os.path.join(mash_db, part[0].split('.')[sub_db_level] +'.msh'))
+                        if dist <= report_neighbor :
+                            neighbors.append([part[1], part[0], dist])
+            for msh_db in msh_dbs :
+                if os.path.exists(msh_db) :
+                    msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(msh_db, msh_file, n_thread, **params).split(), stdout=subprocess.PIPE)
+                    for line in iter(msh_run.stdout.readline, r'') :
+                        part = line.strip().split()
+                        dist = float(part[2])
+                        if dist <= report_neighbor :
+                            neighbors.append([part[1], part[0], dist])
+        elif os.path.exists(ref_msh) :
+            msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(ref_msh, msh_file, n_thread, **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            for line in iter(msh_run.stdout.readline, r'') :
+                part = line.strip().split()
+                dist = float(part[2])
+                if dist <= 1 :
+                    neighbors.append([part[1], part[0], dist])
+        return sorted(neighbors, key=lambda x:(x[0], x[2]))
+except :
+    pass
+
+
+def get_file(url, fname) :
+    for ite in xrange(10) :
+        try :
+            req = urllib2.urlopen(url, timeout=2)
+            CHUNK = 16 * 1024
+            with open(fname, 'wb') as fout :
+                while True :
+                    chunk = req.read(CHUNK)
+                    if not chunk:
+                        break
+                    fout.write(chunk)
+            break
+        except :
+            time.sleep(2)
+    return fname
 
 def load_params(argv) :
     c2 = dict([[ k.strip() for k in arg.split('=', 1)] for arg in argv[1:]])
@@ -8,14 +84,22 @@ def load_params(argv) :
     assert os.path.join(c2['dbname'], 'dbsetting.cfg'), 'Not configured. Run db_create.py to build the framework for a database.'
     
     config = json.load(open(os.path.join(c2['dbname'], 'dbsetting.cfg')))
+    for k in c2 :
+        if k in config :
+            if isinstance(config[k], int) :
+                c2[k] = int(c2[k])
+            elif isinstance(config[k], float) :
+                c2[k] = float(c2[k])
     config.update(c2)
     for k in config :
         if isinstance(config[k], basestring) and '{' in config[k] :
             config[k] = config[k].format(**config)
     return config
 
+@contextlib.contextmanager
 def get_genome_file(parse, data, folder='.') :
     outputs = []
+    to_del = []
     for parse in parse.split(',') :
         if parse.isdigit() :
             record = data.loc[data['index'] == parse]
@@ -31,15 +115,18 @@ def get_genome_file(parse, data, folder='.') :
         for name, fname, lname in record.loc[:, ['index', 'file_path', 'url_path']].as_matrix() :
             if not os.path.isfile(fname) :
                 fname = os.path.join(folder, lname.rsplit('/', 1)[-1])
+                get_file(lname, fname)
                 if fname[-3:].upper() == '.GZ' :
+                    subprocess.Popen('gzip -d {0}'.format(fname).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
                     fname = fname[:-3]
-                    d = subprocess.Popen('curl {0}|gzip -d > {1}'.format(lname, fname), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                else :
-                    d = subprocess.Popen('curl {0} > {1}'.format(lname, fname), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                d.communicate()
-                assert d.returncode == 0, 'failed during downloading {0}'.format(lname)
+                to_del.append(fname)
+
             outputs.append([name, fname])
-    return outputs
+    yield outputs
+    for fname in to_del :
+        if os.path.isfile(fname) :
+            os.unlink(fname)
+    
 
 def get_mash(fname, prefix=None, is_read=False, **param) :
     if prefix is None :
@@ -54,42 +141,6 @@ def get_mash(fname, prefix=None, is_read=False, **param) :
         assert prefix + '.msh'
         return prefix + '.msh'
 
-def run_mash(data) :
-    msh_file, ref_msh, n_thread, params = data
-    neighbors = []
-    if ref_msh is None :
-        mash_db, sub_db_level = params['mash_db'], params['representative_level']
-        report_neighbor, deep_search = params['barcode_dist'][0]*1.2, params['barcode_dist'][max(sub_db_level-1, 0)]
-        
-        default_db = os.path.join(mash_db, 'default.msh')
-        
-        msh_dbs = []
-        if os.path.exists(default_db) :
-            msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(default_db, msh_file, n_thread, **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            for line in iter(msh_run.stdout.readline, r'') :
-                part = line.strip().split()
-                dist = float(part[2])
-                if dist <= deep_search :
-                    msh_dbs.append(os.path.join(mash_db, part[0].split('.')[sub_db_level] +'.msh'))
-                if dist <= report_neighbor :
-                    neighbors.append([part[1], part[0], dist])
-            for msh_db in msh_dbs :
-                if os.path.exists(msh_db) :
-                    msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(msh_db, msh_file, n_thread, **params).split(), stdout=subprocess.PIPE)
-                    for line in iter(msh_run.stdout.readline, r'') :
-                        part = line.strip().split()
-                        dist = float(part[2])
-                        if dist <= report_neighbor :
-                            neighbors.append([part[1], part[0], dist])
-    elif os.path.exists(ref_msh) :
-        msh_run = subprocess.Popen('{mash} dist -p {2} {0} {1}'.format(ref_msh, msh_file, n_thread, **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        for line in iter(msh_run.stdout.readline, r'') :
-            part = line.strip().split()
-            dist = float(part[2])
-            if dist <= 1 :
-                neighbors.append([part[1], part[0], dist])
-
-    return sorted(neighbors, key=lambda x:(x[0], x[2]))
 
 import hashlib
 
@@ -104,7 +155,6 @@ def fileSHA(fname) :
             while len(block) > 0:
                 yield block
                 block = afile.read(blocksize)
-
     return hash_bytestr_iter(file_as_blockiter(open(fname, 'rb')), hashlib.sha256())
 
 def retrieve_info(group, data=None, **params) :
@@ -122,3 +172,33 @@ def retrieve_info(group, data=None, **params) :
         r = np.unique(d[tlevel].as_matrix(), return_counts=True)
         g['taxonomy'].append( dict(rank=tlevel, freq=[dict(count=c, taxon=t) for c, t in sorted(zip(r[1], r[0]))] ))
     return g
+
+
+def get_taxonomy(**param) :
+    names = {}
+    with open(os.path.join(param['taxonomy_db'], 'names.dmp')) as fin :
+        for line in fin :
+            part = line.strip().split('\t')
+            if part[6] == 'scientific name' :
+                names[part[0]] = part[2]
+    children = {}
+    nodes = {'1':[]}
+    category = { t:1 for t in param['taxa_columns'] }
+    with open(os.path.join(param['taxonomy_db'], 'nodes.dmp')) as fin :
+        fin.readline()
+        for line in fin :
+            part = line.strip().split('\t')
+            nodes[part[0]] = [[part[4], names.get(part[0], '')]] if part[4] in category else []
+            if part[2] not in children :
+                children[part[2]] = [part[0]]
+            else :
+                children[part[2]].append(part[0])
+    q = ['1']
+    while len(q) :
+        nq = []
+        for qq in q :
+            nq.extend(children.get(qq, []))
+            for c in children.get(qq, []) :
+                nodes[c].extend(nodes[qq])
+        q = nq
+    return nodes

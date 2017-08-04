@@ -1,9 +1,11 @@
 # msh_barcoding.py
 
-import sys, os, subprocess, capnp
+import sys, os, capnp, subprocess
 import shutil, utils, pandas as pd, numpy as np
 from multiprocessing import Pool
 import time, signal
+
+capnp.remove_import_hook()
 
 kill_signal = False
 def signal_handler(signal, frame):
@@ -12,41 +14,8 @@ def signal_handler(signal, frame):
     kill_signal = True
 
 
-
-def get_taxonomy(**param) :
-    names = {}
-    with open(os.path.join(param['taxonomy_db'], 'names.dmp')) as fin :
-        for line in fin :
-            part = line.strip().split('\t')
-            if part[6] == 'scientific name' :
-                names[part[0]] = part[2]
-    children = {}
-    nodes = {'1':[]}
-    category = { t:1 for t in param['taxa_columns'] }
-    with open(os.path.join(param['taxonomy_db'], 'nodes.dmp')) as fin :
-        fin.readline()
-        for line in fin :
-            part = line.strip().split('\t')
-            nodes[part[0]] = [[part[4], names.get(part[0], '')]] if part[4] in category else []
-            if part[2] not in children :
-                children[part[2]] = [part[0]]
-            else :
-                children[part[2]].append(part[0])
-    q = ['1']
-    while len(q) :
-        nq = []
-        for qq in q :
-            nq.extend(children.get(qq, []))
-            for c in children.get(qq, []) :
-                nodes[c].extend(nodes[qq])
-        q = nq
-    return nodes
-
-
 def save2mash(inputs, codes, **params) :
-    capnp.remove_import_hook()
     mash_db, sub_db_level = params['mash_db'], params['representative_level']    
-    default_db = os.path.join(mash_db, 'default.msh')
     to_merge = {}
     
     outputs = []
@@ -62,10 +31,14 @@ def save2mash(inputs, codes, **params) :
         outputs.append([idx, size, c, fmsh, idx2])
     
         if codes[idx][sub_db_level] == idx2 :
-            if default_db not in to_merge :
-                to_merge[default_db] = [fmsh]
-            else :
-                to_merge[default_db].append(fmsh)
+            for default_db in params['default_mash'] :
+                if default_db['ref'] >= size :
+                    filename = os.path.join(mash_db, default_db['name'])
+                    if filename not in to_merge :
+                        to_merge[filename] = [fmsh]
+                    else :
+                        to_merge[filename].append(fmsh)
+                    break
         elif codes[idx][-1] == idx2 :
             msh_db = os.path.join(mash_db, c.split('.')[params['representative_level']] + '.msh')
             if msh_db not in to_merge :
@@ -117,66 +90,72 @@ def genotype_and_saving(inputs, pool, **params) :
 def load_data(exist_db, new_data, **params) :
     db_columns = params['db_columns'] + params['metadata_columns'] + params['taxa_columns']
     if os.path.isfile(exist_db) :
-        genome_list = pd.DataFrame(pd.read_msgpack(exist_db), columns = db_columns, dtype=str)
+        existing = pd.DataFrame(pd.read_msgpack(exist_db), columns = db_columns).fillna('-').astype(str)
     else :
-        genome_list = pd.DataFrame(columns = db_columns, dtype=str)
+        existing = pd.DataFrame(columns = db_columns, dtype=str)
+    with open(new_data, 'r') as fin :
+        cur_loc = 0
+        for line in fin :
+            if line.find('\t') < 0 :
+                cur_loc += len(line)
+            else :
+                break
+        fin.seek(cur_loc)
+        entries = pd.read_csv(fin, delimiter='\t', dtype=str, na_values=['na'], skip_blank_lines=True).fillna('-')
+    if 'url_path' not in entries.columns and 'ftp_path' in entries.columns :
+        entries['url_path'] = [ '-' if p == '-' else ( p if p.endswith('.fna.gz') else p + '/' + p.rsplit('/', 1)[-1] + '_genomic.fna.gz') for p in entries['ftp_path']]
 
-    new_list = pd.read_csv(new_data, delimiter='\t', dtype=str)
-    if 'url_path' not in new_list.columns and 'ftp_path' in new_list.columns :
-        new_list['url_path'] = [ 'nan' if p == 'na' else ( p if p.endswith('.fna.gz') else p + '/' + p.rsplit('/', 1)[-1] + '_genomic.fna.gz') for p in new_list['ftp_path']]
-    for col in new_list.columns :
+    entries = entries.loc[((entries.get('url_path', '-') != '-') | (entries.get('file_path', '-') != '-')) & \
+                          (entries.get('excluded_from_refseq', '-') == '-') &\
+                          (entries.get('version_status', 'latest') == 'latest') & \
+                          (entries.get('genome_rep', 'Full') == 'Full') ]
+
+    for col in entries.columns :
         if col.startswith('#') :
-            new_list[col.split(' ', 1)[1]] = new_list[col]
-    new_list = pd.DataFrame(new_list, columns=db_columns, dtype=str)
-    new_list = new_list.loc[(new_list['file_path'] != 'nan') | (new_list['url_path'] != 'nan')].reset_index(drop=True)
+            entries[col[1:].strip()] = entries[col]
+    
+    entries['version'] = entries['assembly_accession'].apply(lambda x:x.rsplit('.', 1)[-1])
 
+    entries = pd.DataFrame(entries, columns=db_columns).fillna('-').reset_index(drop=True)
+    entries['refseq_category'] = pd.Categorical(entries['refseq_category'], ['reference genome', 'representative genome', '-'])
+    entries['assembly_level'] = pd.Categorical(entries['assembly_level'], ['Complete Genome', 'Chromosome', 'Draft']).fillna('Draft')
+    entries.version = pd.to_numeric(entries.version, errors='coerce').fillna(1).astype(np.int64)
+    
     cur_rec = {rr:id \
-               for id, r in enumerate(genome_list[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
-               for rr in r if rr != 'nan'}
+               for id, r in enumerate(existing[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
+               for rr in r if rr != '-'}
     novel_ids = [id \
-                 for id, r in enumerate(new_list[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
+                 for id, r in enumerate(entries[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
                  if r[0] not in cur_rec and r[1] not in cur_rec and r[2] not in cur_rec ]
-    new_list = new_list.loc[novel_ids].reset_index(drop=True)
-    return genome_list, new_list
+    
+    entries = entries.loc[novel_ids].sort_values(by=['refseq_category', 'version', 'assembly_level', 'assembly_accession'], ascending=[True, False, True, True]).reset_index(drop=True)
+    entries['refseq_category'] = entries['refseq_category'].astype(str)
+    entries['assembly_level'] = entries['assembly_level'].astype(str)
+    entries = pd.DataFrame(entries, columns=db_columns, dtype=str)
+    return existing, entries
 
 def add_taxa_col(data, **params) :
     taxids = np.unique(data['taxid'].as_matrix())
-    if np.sum(taxids[taxids != 'nan'].astype(int) > 0) == 0 :
+    if np.sum(taxids[taxids != '-'].astype(int) > 0) == 0 :
         return data
     
-    nodes = get_taxonomy(**params)
+    nodes = utils.get_taxonomy(**params)
     taxa = {r:{} for r in params['taxa_columns'] }
     for t in taxids :
         for r, i in nodes.get(t, []) :
             taxa[r][t] = i
 
     for r in params['taxa_columns'] :
-        data[r] = [ taxa[r].get(tid, ori) for tid, ori in data[['taxid', r]].as_matrix() ]
+        data[r] = [ (taxa[r].get(tid, ori) if ori == '-' else ori) for tid, ori in data[['taxid', r]].as_matrix() ]
     return data
-
-
-def reorder_inputs(new_list, **params) :
-    group_ranks = params['taxa_columns'][3:]
-    group = new_list[group_ranks[0]]
-    for rank in group_ranks[1:] :
-        group.loc[group == 'nan'] = new_list.loc[group == 'nan', rank]
-    group = group.as_matrix()
-    order_ids = np.zeros(shape=group.shape, dtype=int)
-    group_cnt = dict([[n,0] for n in np.unique(group)]+[['nan', 0]])
-    for idx, record in enumerate(new_list[group_ranks].as_matrix()) :
-        order_id = np.max([group_cnt.get(n, 0) for n in record] + [group_cnt['nan']])
-        order_ids[idx] = order_id
-        group_cnt[group[idx]] += 1
-    new_list = new_list.loc[np.argsort(order_ids,kind='mergesort')].reset_index(drop=True)
-    return new_list
 
 def mash_proc(data) :
     idx, file_link, url_link, params = data
     if not os.path.isfile(file_link) :
-        file_link = 'nan'
-    if file_link == 'nan' :
+        file_link = '-'
+    if file_link == '-' :
         fname = url_link.rsplit('/',1)[-1]
-        subprocess.Popen('wget -O {1} {0}'.format(url_link, fname).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+        utils.get_file(url_link, fname)
     else :
         fname = file_link
     try :
@@ -184,7 +163,7 @@ def mash_proc(data) :
         if os.path.isfile(fname.rsplit('/',1)[-1] + '.msh') :
             os.unlink(fname.rsplit('/',1)[-1] + '.msh')
         msh_file = utils.get_mash(fname, fname.rsplit('/',1)[-1], is_read=False, **params)
-        if file_link == 'nan' :
+        if file_link == '-' :
             os.unlink(fname)
         return idx, sha, msh_file, fname
     except :
@@ -192,27 +171,47 @@ def mash_proc(data) :
 
 if __name__ == '__main__' :
     params = utils.load_params(sys.argv)
+    if 'update' in params :
+        summary_link = 'ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.txt'
+        summary_file = 'assembly_summary_refseq.txt'
+        utils.get_file(summary_link, summary_file)
+        params['seqlist'] = summary_file
+    
+    if 'update' in params or not os.path.isfile(os.path.join(params['taxonomy_db'], 'names.dmp')) or not os.path.isfile(os.path.join(params['taxonomy_db'], 'nodes.dmp')):
+        taxdump = 'ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz'
+        import tarfile
+        utils.get_file(taxdump, 'taxdump.tar.gz')
+        if not os.path.isdir(params['taxonomy_db']) :
+            os.makedirs(params['taxonomy_db'])
+        
+        with tarfile.open('taxdump.tar.gz', 'r') as tf :
+            tf.extractall(path=params['taxonomy_db'])
+        os.unlink('taxdump.tar.gz')
     
     assert 'seqlist' in params, 'use seqlist to bring in a list of genomes.'
     
     exist_db = os.path.join(params['dbname'], 'db_metadata.msg')
-    genome_list, new_list = load_data(exist_db, params['seqlist'], **params)
-    new_list = add_taxa_col(new_list, **params)
-    phylum_order = [(m[0] not in ('Archaea', 'Bacteria') )*100 + (m[1] in ('Metazoa', 'Viridiplantae','nan'))*10 + (m[2] in ('nan', 'Chordata', 'Arthropoda', 'Streptophyta', 'Echinodermata', 'Platyhelminthes', 'Mollusca')) for m in new_list[['superkingdom', 'kingdom', 'phylum']].as_matrix()]
-    new_list = new_list.loc[np.argsort(phylum_order, kind='mergesort')].reset_index(drop=True)
+    existing, entries = load_data(exist_db, params['seqlist'], **params)
+    entries = add_taxa_col(entries, **params)
+    #entries.to_csv('test.csv', index=False, sep='\t')
+    phylum_order = [(m[0] not in ('Archaea', 'Bacteria') )*100 + \
+                    (m[1] in ('Metazoa', 'Viridiplantae','nan'))*10 + \
+                    (m[2] in ('nan', 'Chordata', 'Arthropoda', 'Streptophyta', 'Echinodermata', 'Platyhelminthes', 'Mollusca')) \
+                    for m in entries[ params['taxa_columns'][-1:-4:-1] ].as_matrix()]
+    entries = entries.loc[np.argsort(phylum_order, kind='mergesort')].reset_index(drop=True)
     
-    index_id = max(genome_list['index'].as_matrix().astype(int))+1 if genome_list.shape[0] > 0 else 0
+    index_id = max(existing['index'].as_matrix().astype(int))+1 if existing.shape[0] > 0 else 0
 
     pool, batches = Pool(params['n_thread']), params['n_thread']*3
     
-    sha_dict = {c:1 for c in genome_list['sha256'].as_matrix()}
+    sha_dict = {c:1 for c in existing['sha256'].as_matrix()}
     sha_dict[''] = 1
     
-    for group_id in np.arange(0, new_list.shape[0], batches) :
-        inputs2 = pool.map(mash_proc, [ [idx, record['file_path'], record['url_path'], params] for idx, record in new_list.loc[group_id:(group_id+batches-1)].iterrows() ])
+    for group_id in np.arange(0, entries.shape[0], batches) :
+        inputs2 = pool.map(mash_proc, [ [idx, record['file_path'], record['url_path'], params] for idx, record in entries.loc[group_id:(group_id+batches-1)].iterrows() ])
         inputs = []
         for i in inputs2 :
-            new_list.loc[i[0], 'sha256'] = i[1]
+            entries.loc[i[0], 'sha256'] = i[1]
             if i[1] not in sha_dict :
                 sha_dict[i[1]] = 1
                 inputs.append(list(i) + [index_id])
@@ -227,13 +226,13 @@ if __name__ == '__main__' :
         results = genotype_and_saving(inputs, pool, **params)
         
         for idx, size, c, fmsh, index_id2 in results :
-            genome = new_list.loc[idx]
+            genome = entries.loc[idx]
             genome['index'] = str(index_id2)
             genome['barcode'] = c
             genome['size'] = str(size)
-            genome_list = genome_list.append(genome)
+            existing = existing.append(genome)
             os.unlink(fmsh)
             print time.strftime('%X %x %Z'),':', genome['organism_name'], c
-        genome_list.to_msgpack(exist_db)
+        existing.to_msgpack(exist_db)
         if kill_signal :
             sys.exit(0)

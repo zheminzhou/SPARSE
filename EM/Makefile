@@ -14,7 +14,7 @@ CC = g++
 MPICC = mpiCC
 
 # C++ Compile Flag
-CFLAGS = -c -Wall
+CFLAGS = -c -Wall -std=c++0x
 
 # GCC OpenMP Flag
 OMPFLAG = -fopenmp
@@ -26,29 +26,25 @@ STFLAG = -static
 INCL = -I./Ipopt/include
 
 # Library
-LDFLAGS = -L./Ipopt/lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.7 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../x86_64-suse-linux/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../.. -lipopt -llapack -ldl -lcoinmumps -lfblas -lpthread -lgfortran -lm -lquadmath
+# LDFLAGS = -L./Ipopt/lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.7 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../../../x86_64-suse-linux/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.7/../../.. -lipopt -llapack -ldl -lcoinmumps -lfblas -lpthread -lgfortran -lm -lquadmath
+LDFLAGS = -L./Ipopt/lib64 -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/ -L/lib/ -L/lib64/ -L/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu -lipopt -llapack -ldl -lcoinmumps -lfblas -lpthread -lgfortran -lm -lquadmath
 
 
 #########################################################
 # Please do NOT change below Makefile variables         #
 #########################################################
 
-# Common source files
-SIGMA_COMMON_SRC = utils.cpp \
-
-
-# SIGMA solve model
-SIGMA_SOLVE_MODEL_SRC = sigma_solve_model_main.cpp \
-	sigma_ipopt_run.cpp \
-	sigma_ipopt_nlp.cpp
+# solve model
+SOLVE_MODEL_SRC = solve_model_main.cpp \
+	ipopt_run.cpp \
+	ipopt_nlp.cpp
 
 
 # Object files are from source files
-SIGMA_COMMON_OBJS = ${SIGMA_COMMON_SRC:.cpp=.o}
-SIGMA_SOLVE_MODEL_OBJS = ${SIGMA_SOLVE_MODEL_SRC:.cpp=.o}
+SOLVE_MODEL_OBJS = ${SOLVE_MODEL_SRC:.cpp=.o}
 # This should be the name of your executable
 
-SIGMA_SOLVE_MODEL_EXE = sigma-solve-model
+SOLVE_MODEL_EXE = solve-model
 # The following is necessary under cygwin, if native compilers are used
 CYGPATH_W = echo
 
@@ -58,13 +54,13 @@ CYGPATH_W = echo
 
 # Build arg
 
-all: sigma_solve_model
+all: solve_model
 
-sigma_solve_model: $(SIGMA_SOLVE_MODEL_EXE)
+solve_model: $(SOLVE_MODEL_EXE)
 
 # Build
 
-$(SIGMA_SOLVE_MODEL_EXE): $(SIGMA_COMMON_OBJS) $(SIGMA_SOLVE_MODEL_OBJS)
+$(SOLVE_MODEL_EXE): $(SOLVE_MODEL_OBJS)
 	$(CC) $(OMPFLAG) $(STFLAG) $^ $(LDFLAGS) -o $@
 
 
@@ -72,9 +68,8 @@ $(SIGMA_SOLVE_MODEL_EXE): $(SIGMA_COMMON_OBJS) $(SIGMA_SOLVE_MODEL_OBJS)
 
 clean:
 	rm -f \
-	$(SIGMA_SOLVE_MODEL_EXE) \
-	$(SIGMA_COMMON_OBJS) \
-	$(SIGMA_SOLVE_MODEL_OBJS) \
+	$(SOLVE_MODEL_EXE) \
+	$(SOLVE_MODEL_OBJS) \
 ####
 # To handle CC and MPICC, let compile individually
 #.cpp.o:
@@ -83,16 +78,13 @@ clean:
 #.cpp.obj:
 #    $(CC) $(CFLAGS) $(EXTRA_FLAGS) $(INCL) $^ -o $@ `$(CYGPATH_W) '$<'`
 
-utils.o: utils.cpp
-	$(CC) $(CFLAGS) utils.cpp
+solve_model_main.o: solve_model_main.cpp
+	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) solve_model_main.cpp
 
-sigma_solve_model_main.o: sigma_solve_model_main.cpp
-	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) sigma_solve_model_main.cpp
+ipopt_run.o: ipopt_run.cpp
+	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) ipopt_run.cpp
 
-sigma_ipopt_run.o: sigma_ipopt_run.cpp
-	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) sigma_ipopt_run.cpp
-
-sigma_ipopt_nlp.o: sigma_ipopt_nlp.cpp
-	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) sigma_ipopt_nlp.cpp
+ipopt_nlp.o: ipopt_nlp.cpp
+	$(CC) $(CFLAGS) $(OMPFLAG) $(INCL) ipopt_nlp.cpp
 
 
