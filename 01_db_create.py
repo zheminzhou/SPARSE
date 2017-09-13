@@ -1,9 +1,10 @@
 import sys, os, json,subprocess
 
-sparse_folder = os.path.realpath(__file__).replace('\\', '/')
+sparse_folder = os.path.realpath(__file__).replace('\\', '/').rsplit('/', 1)[0]
 
 default_param = dict(
-    BIN = os.path.expanduser('~').replace('\\', '/') + '/bin', 
+#    BIN = os.path.expanduser('~').replace('\\', '/') + '/bin', 
+    BIN = '/usr/local/bin',
     SPARSE = sparse_folder,
 
     mash = '{BIN}/mash', 
@@ -42,15 +43,13 @@ default_param = dict(
                             MapDB='Eukaryota',     tag='p==a',      min=0, max=500000000, superkingdom='Eukaryota,-',
                     )],
     
-    msh_param = '-k 23 -s 4000', 
+    msh_param = '-k 23 -s 4000 -S 42', 
     mismatch = 0.05,
     n_thread = 20,
     representative_level = 2,
     virus_size = 50000,
     default_ref_size = 150000000,
 )
-
-taxdump = 'ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz'
 
 if __name__ =='__main__' :
     param = dict([[ k.strip() for k in arg.split('=', 1)] for arg in sys.argv[1:]])

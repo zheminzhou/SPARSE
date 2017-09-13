@@ -2,7 +2,7 @@
 import sys, subprocess, os, gzip, re, shutil, numpy as np, pandas as pd
 import utils, time, glob
 from multiprocessing import Pool
-# from scipy.stats import norm
+from scipy.stats import norm
 from scipy.special import factorial
 from scipy.stats.mstats import gmean
 
@@ -62,7 +62,7 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, conservation_model=[[0
     barcodes[tax_ids] = b2[tax_ids]
     
     # # PER match conservation weighting
-    conservation = np.zeros(shape=np.max(maps.T[0])+1, dtype=float)
+    conservation = np.zeros(shape=np.max(maps.T[0]).astype(int)+1, dtype=float)
     for id, (prior, c_p, a_p) in enumerate(conservation_model) :
         taxa_cnt = barcodes[np.unique(barcodes.T[id+2], return_index=True)[1], id]
         taxa_cnt = np.bincount(*np.unique(taxa_cnt[taxa_cnt >= 0], return_counts=True))
@@ -76,15 +76,19 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, conservation_model=[[0
         maps[c[1], 8] = taxa_cnt[barcodes[maps[c[1], 1].astype(int), id]]
         maps[c[1], 9] = c[2]
         r_weight = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 10] )
+        r_weight[r_weight == 0] = 1
         r_present = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 9]*maps[c[1], 10] )/r_weight
         r_total = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 8]*maps[c[1], 10] )/r_weight
         p = (r_total > 0)
-        lk1 = np.exp(np.log(prior) + r_present[p]*np.log(c_p) + (r_total[p]-r_present[p])*np.log(1-c_p))
-        lk2 = np.exp(np.log(1-prior) + r_present[p]*np.log(a_p) + (r_total[p]-r_present[p])*np.log(1-a_p))
+        lk1 = np.log(prior) + r_present[p]*np.log(c_p) + (r_total[p]-r_present[p])*np.log(1-c_p)
+        lk1[lk1>700] = 700
+        lk2 = np.log(1-prior) + r_present[p]*np.log(a_p) + (r_total[p]-r_present[p])*np.log(1-a_p)
+        lk2[lk2>700] = 700
+        lk1, lk2 = np.exp(lk1), np.exp(lk2)
         r_total[p] = lk1/(lk1 + lk2)
         conservation[r_total>conservation] = r_total[r_total>conservation]
         
-    maps[:, 9] = conservation[maps[:, 0]]
+    maps[:, 9] = conservation[maps[:,0].astype(int)]
     print time.time()-o_t, "conservation score."
     sys.stdout.flush()
     
@@ -166,8 +170,6 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, conservation_model=[[0
     
 def summary_matrix(data, MapDB, workspace, bowtie_db, mismatch=0.05, n_thread=10, **params) :
     db_list = searchDBs(bowtie_db, MapDB)
-
-    o_t = time.time()
 
     # # prepare taxonomy info for sequences
     seq_files, map_files = [], []
@@ -383,6 +385,7 @@ def assign_reads(data, qvector, workspace, **params) :
     # 4: read distance;   5: mean distance
     significant_aln = (maps.T[10] >= 0.05)
     aln_len = np.bincount(maps[significant_aln, 1].astype(int)+1, (maps.T[7]*(maps.T[4] + maps.T[5]))[significant_aln])
+    aln_len[aln_len==0] = 1.0
     aln_mut = np.bincount(maps[significant_aln, 1].astype(int)+1, (maps.T[7]*maps.T[4])[significant_aln])
     
     maps.T[4] = 100.0*maps.T[4]/(maps.T[4] + maps.T[5])
@@ -511,6 +514,7 @@ if __name__ == '__main__' :
         
     data = utils.load_database(**params)
     
+    o_t = time.time()
     if params.get('stage', '0') in '0' :
         bowtie2matrix(**params)
     if params.get('stage', '0') in '01' :
@@ -518,7 +522,7 @@ if __name__ == '__main__' :
     if params.get('stage', '0') in '012' :    
         qvector = ipopt(**params)
     if params.get('stage', '0') in '0123' :
-        qvector = os.path.join(params['workspace'], 'ipopt.gvector.txt')
+        qvector = os.path.join(params['workspace'], 'ipopt.qmatrix.solution')
         assign_reads(data, qvector, **params)
     if params.get('stage', '0') in '01234' :
         assign = os.path.join(params['workspace'], 'read_assignment.gz')

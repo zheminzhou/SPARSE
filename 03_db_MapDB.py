@@ -127,6 +127,6 @@ if __name__ == '__main__' :
 
         with open(mapdb + '.info', 'w') as fout :
             for id, bucket in enumerate(buckets) :
-                for b,f,s in bucket[1] :
+                for b,_,_,_ in bucket[1] :
                     fout.write('{0}\t{1}\n'.format(b, id+start_id))
         print 'Done'
