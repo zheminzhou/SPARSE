@@ -12,6 +12,9 @@ default_param = dict(
     bowtie2_build = '{BIN}/bowtie2-build',
     samtools = '{BIN}/samtools',
     ipopt = '{SPARSE}/EM/solve-model',
+
+    malt_run = 'xvfb-run --auto-servernum --server-num=1 malt-run', 
+    malt_build = 'xvfb-run --auto-servernum --server-num=1 malt-build',
     
     barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005], 
     barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a'],

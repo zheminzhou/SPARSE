@@ -229,50 +229,82 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
     # run bowtie2 in multiple threads
     for db_prefix in db_list :
         out_prefix = os.path.join(workspace, db_prefix.rsplit('/', 1)[-1])
-        
-        cmd_bt2 = '{0} -k 300 --no-unal --ignore-quals --score-min L,20,1.1 --mp 6,6 --np 6 --sensitive-local -q -p {2} -I 25 -X 800 -x {3} {1}'.format(
-            params['bowtie2'], read_info, n_thread, db_prefix)
-        run_bt2 = subprocess.Popen(cmd_bt2.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        prev, res, seq_info = {}, [], []
-        used_names = {}
-        for line in iter(run_bt2.stdout.readline, r'') :
-            if line.startswith('@') :
-                if line.startswith('@SQ') :
-                    name, seq_len = [ p[3:] for p in line.strip().split()[1:3] ]
-                    if name in seqs :
-                        used_names[name] = 1
-                        seq_info.append([seqs[name][1],       # seq ID
-                                         int(seq_len),        # seq Length
-                                         seqs[name][0]] )     # tax ID
-            else :
-                part = line.strip().split()
-                if part[2] in seqs :
-                    key = (part[0], int(part[1]) & 128)
-                    if key not in prev :
-                        s = [int(l) for l in re.findall('(\d+)S', part[5])]
-                        if sum(s) > 100 or sum(s) * 2 >= len(part[9]) or (len(s) > 1 and min(s) > 3) :
-                            continue
+        if os.path.isfile(db_prefix+'.4.bt2') :
+            cmd_bt2 = '{0} -k 300 --no-unal --ignore-quals --score-min L,20,1.1 --mp 6,6 --np 6 --sensitive-local -q -p {2} -I 25 -X 800 -x {3} {1}'.format(
+                params['bowtie2'], read_info, n_thread, db_prefix)
+            run_bt2 = subprocess.Popen(cmd_bt2.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            prev, res, seq_info = {}, [], []
+            used_names = {}
+            for line in iter(run_bt2.stdout.readline, r'') :
+                if line.startswith('@') :
+                    if line.startswith('@SQ') :
+                        name, seq_len = [ p[3:] for p in line.strip().split()[1:3] ]
+                        if name in seqs :
+                            used_names[name] = 1
+                            seq_info.append([seqs[name][1],       # seq ID
+                                             int(seq_len),        # seq Length
+                                             seqs[name][0]] )     # tax ID
+                else :
+                    part = line.strip().split()
+                    if part[2] in seqs :
+                        key = (part[0], int(part[1]) & 128)
+                        if key not in prev :
+                            s = [int(l) for l in re.findall('(\d+)S', part[5])]
+                            if sum(s) > 100 or sum(s) * 2 >= len(part[9]) or (len(s) > 1 and min(s) > 3) :
+                                continue
+                            else :
+                                prev = {key:{seqs[part[2]][0]:1}}
+                        elif seqs[part[2]][0] not in prev[key] :
+                            s = [int(l) for l in re.findall('(\d+)S', part[5])]
+                            if sum(s) > 100 or sum(s) * 2 >= len(part[9]) or (len(s) > 1 and min(s) > 3) :
+                                continue
+                            else :
+                                prev[key][seqs[part[2]][0]] = 1
                         else :
-                            prev = {key:{seqs[part[2]][0]:1}}
-                    elif seqs[part[2]][0] not in prev[key] :
-                        s = [int(l) for l in re.findall('(\d+)S', part[5])]
-                        if sum(s) > 100 or sum(s) * 2 >= len(part[9]) or (len(s) > 1 and min(s) > 3) :
                             continue
-                        else :
-                            prev[key][seqs[part[2]][0]] = 1
+                        score = int(part[11][5:]) + (0 if len(s) == 0 else max(s))
+                        mut = (len(part[9])*2 - score)/8.0
+                        nom = len(part[9]) - mut
+                        res.append([ int(part[0]),        # read ID
+                                     seqs[part[2]][0],    # taxa ID
+                                     seqs[part[2]][1],    # seq ID
+                                     int(part[3]),        # align Site
+                                     mut,                 # No. mutation
+                                     nom,                 # No. conserved
+                                    ])
+        else :
+            for read in read_info.split()[::2] :
+                cmd_malt = '{0} -m BlastN -i {1} -a STDOUT -t {2} -mq 300 -d {3}'.format(
+                    params['malt-run'], read_info, n_thread, db_prefix)
+                run_bt2 = subprocess.Popen(cmd_bt2.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                prev, res, seq_info = {}, [], []
+                used_names = {}
+                for line in iter(run_bt2.stdout.readline, r'') :
+                    if line.startswith('@') :
+                        if line.startswith('@SQ') :
+                            name, seq_len = [ p[3:] for p in line.strip().split()[1:3] ]
+                            if name in seqs :
+                                used_names[name] = 1
+                                seq_info.append([seqs[name][1],       # seq ID
+                                                 int(seq_len),        # seq Length
+                                                 seqs[name][0]] )     # tax ID
                     else :
-                        continue
-                    score = int(part[11][5:]) + (0 if len(s) == 0 else max(s))
-                    mut = (len(part[9])*2 - score)/8.0
-                    nom = len(part[9]) - mut
-                    res.append([ int(part[0]),        # read ID
-                                 seqs[part[2]][0],    # taxa ID
-                                 seqs[part[2]][1],    # seq ID
-                                 int(part[3]),        # align Site
-                                 mut,                 # No. mutation
-                                 nom,                 # No. conserved
-                                ])
+                        part = line.strip().split()
+                        if part[2] in seqs :
+                            key = (part[0], int(part[1]) & 128)
+
+                            score = int(part[11][5:]) + (0 if len(s) == 0 else max(s))
+                            mut = (len(part[9])*2 - score)/5.0
+                            nom = len(part[9]) - mut
+                            res.append([ int(part[0]),        # read ID
+                                         seqs[part[2]][0],    # taxa ID
+                                         seqs[part[2]][1],    # seq ID
+                                         int(part[3]),        # align Site
+                                         mut,                 # No. mutation
+                                         nom,                 # No. conserved
+                                        ])
         for name in used_names: 
             seqs.pop(name, None)
         sfile = out_prefix + '.seqinfo.npy'

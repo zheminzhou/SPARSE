@@ -5,7 +5,7 @@ import shutil, utils, pandas as pd, numpy as np
 from multiprocessing import Pool
 
 def create_db(data) :
-    bt_build, prefix, id, genomes = data
+    build, prefix, id, genomes, dbtype = data
     dbname = '{0}.{1}'.format(prefix, id)
     seq_tax = []
     for g in genomes :
@@ -21,7 +21,10 @@ def create_db(data) :
             seq_tax.append([seqname, g[0]])
         if g[2] != fname :
             os.unlink(fname)
-    r = subprocess.Popen('{0} -o 3 {1} {1}'.format(bt_build, dbname).split(), stdout=subprocess.PIPE)
+    if dbtype == 'bowtie2' :
+        r = subprocess.Popen('{0} -o 3 {1} {1}'.format(build, dbname).split(), stdout=subprocess.PIPE)
+    elif dbtype == 'malt' :
+        r = subprocess.Popen('{0} -i {1} -s DNA -d {1}.malt -t 5'.format(build, dbname).split(), stdout=subprocess.PIPE)
     r.communicate()
     if r.returncode == 0 :
         with gzip.open('{0}.taxa.gz'.format(dbname), 'w') as fout :
@@ -36,6 +39,7 @@ def create_db(data) :
 
 if __name__ == '__main__' :
     params = utils.load_params(sys.argv)
+    params['dbtype'] = params.get('dbtype', 'bowtie2')
     db_columns = [c for c in params['db_columns'] + params['metadata_columns'] + params['taxa_columns'] if c not in ('sha256')]
     
     data = utils.load_database(**params)
@@ -120,7 +124,7 @@ if __name__ == '__main__' :
             if done == 0 :
                 buckets.append([size, [[index, size, file_path, url_path]]])
         pool = Pool(min(params['n_thread'], len(buckets)))
-        result = pool.imap_unordered(create_db, [[params['bowtie2_build'], mapdb, start_id + id, bucket[1]] for id, bucket in enumerate(buckets)])
+        result = pool.imap_unordered(create_db, [[params['bowtie2_build'] if params['dbtype'] == 'bowtie2' else params['malt_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
         for r in result :
             if r[2] != 0 :
                 print 'Database {0}.{1} FAILED with code {2}!'.format(*r)
