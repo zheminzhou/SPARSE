@@ -1,5 +1,3 @@
-# msh_barcoding.py
-
 import sys, os, subprocess, capnp, gzip, glob
 import shutil, utils, pandas as pd, numpy as np
 from multiprocessing import Pool
@@ -24,7 +22,7 @@ def create_db(data) :
     if dbtype == 'bowtie2' :
         r = subprocess.Popen('{0} -o 3 {1} {1}'.format(build, dbname).split(), stdout=subprocess.PIPE)
     elif dbtype == 'malt' :
-        r = subprocess.Popen('{0} -i {1} -s DNA -d {1}.malt -t 5'.format(build, dbname).split(), stdout=subprocess.PIPE)
+        r = subprocess.Popen('{0} -i {1} -s DNA -d {1}.malt -t 20'.format(build, dbname).split(), stdout=subprocess.PIPE)
     r.communicate()
     if r.returncode == 0 :
         with gzip.open('{0}.taxa.gz'.format(dbname), 'w') as fout :
@@ -123,8 +121,11 @@ if __name__ == '__main__' :
                     break
             if done == 0 :
                 buckets.append([size, [[index, size, file_path, url_path]]])
-        pool = Pool(min(params['n_thread'], len(buckets)))
-        result = pool.imap_unordered(create_db, [[params['bowtie2_build'] if params['dbtype'] == 'bowtie2' else params['malt_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
+        if params['dbtype'] == 'bowtie2' :
+            pool = Pool(min(params['n_thread'], len(buckets)))
+            result = pool.imap_unordered(create_db, [[params['bowtie2_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
+        else :
+            result = map(create_db, [[params['malt_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
         for r in result :
             if r[2] != 0 :
                 print 'Database {0}.{1} FAILED with code {2}!'.format(*r)
