@@ -13,12 +13,15 @@ def create_db(data) :
             fname = g[3].rsplit('/', 1)[-1]
             utils.get_file(g[3], fname)
         show_cmd = 'gzip -cd' if fname.upper().endswith('.GZ') else 'cat'
-        show_run = subprocess.Popen("{0} {1}|tee -a '{2}'|grep '^>'".format(show_cmd, fname, dbname), shell=True, stdout=subprocess.PIPE)
-        for line in iter(show_run.stdout.readline, r'') :
-            seqname = line[1:].strip().split()[0]
-            seq_tax.append([seqname, g[0]])
-        if g[2] != fname :
-            os.unlink(fname)
+        try:
+            show_run = subprocess.Popen("{0} {1}|tee -a '{2}'|grep '^>'".format(show_cmd, fname, dbname), shell=True, stdout=subprocess.PIPE)
+            for line in iter(show_run.stdout.readline, r'') :
+                seqname = line[1:].strip().split()[0]
+                seq_tax.append([seqname, g[0]])
+            if g[2] != fname :
+                os.unlink(fname)
+        except :
+            pass
     if dbtype == 'bowtie2' :
         r = subprocess.Popen('{0} -o 3 {1} {1}'.format(build, dbname).split(), stdout=subprocess.PIPE)
     elif dbtype == 'malt' :

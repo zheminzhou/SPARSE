@@ -46,24 +46,9 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, conservation_model=[[0
     # 9.  conservation score
     # 10. normalized align score
     
-    # merge PE alignments
-    n_tax = np.max(maps.T[1])+1
-    tag =maps.T[0]*n_tax + maps.T[1]
-    map_idx, tag_idx = np.unique(tag, return_index=True, return_inverse=True)[1:]
-    m2 = np.zeros(shape=[map_idx.shape[0], 11])
-    m2[:, :6] = maps[map_idx]
-    m2[:, 4], m2[:, 5] = np.bincount(tag_idx, maps.T[4]), np.bincount(tag_idx, maps.T[5])
-    
-    # penalty for SE alignments
-    m2[:, 6] = m2[:, 5] + m2[:, 4]
-    m2 = m2[np.argsort(-m2.T[6])]
-    map_idx, tag_idx = np.unique(m2.T[0], return_index=True, return_inverse=True)[1:]
-    m2[:, 6] = m2[map_idx[tag_idx], 6] - m2[:, 6]
-    m2[:, 4] += 0.1*m2[:, 6]
-    m2[:, 5] += 0.9*m2[:, 6]
-    
+    m2 = np.zeros(shape=[maps.shape[0], 11])
+    m2[:, :6] = maps
     maps = m2
-    
     maps[:, 6] = ( maps[:, 4]*np.log(mismatch) + maps[:, 5]*np.log(1-mismatch) ) - \
                    np.sum(maps[:, 4:6], 1) * (mismatch*np.log(mismatch)+(1-mismatch)*np.log(1-mismatch))
     
@@ -75,104 +60,16 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, conservation_model=[[0
     read_ids = np.unique(maps.T[0], return_index=True, return_inverse=True)
     maps[:, 10] = np.exp(maps[:, 6] - maps[read_ids[1][read_ids[2]], 6])
 
-    # # prepare cluster information from source DB
-    b2 =       np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
-    barcodes = np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
-    barcodes.fill(-1)
-    b2[database['index'].as_matrix().astype(int)] = database['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist()
-    tax_ids = np.unique(maps.T[1]).astype(int)
-    barcodes[tax_ids] = b2[tax_ids]
-    
-    # # PER match conservation weighting
-    conservation = np.ones(shape=np.max(maps.T[0]).astype(int)+1, dtype=float)
-    for id, (prior, c_p, a_p) in enumerate(conservation_model) :
-        taxa_cnt = barcodes[np.unique(barcodes.T[id+2], return_index=True)[1], id]
-        taxa_cnt = np.bincount(*np.unique(taxa_cnt[taxa_cnt >= 0], return_counts=True))
-
-        if np.max(taxa_cnt) == 1 : break
-        
-        # (readID + taxID) united key
-        maps[:, 7] = barcodes[maps.T[1].astype(int), id+2] + maps.T[0].astype(int)*(taxa_cnt.size + 1)
-        maps[:, 8] = barcodes[maps.T[1].astype(int), id] + maps.T[0].astype(int)*(taxa_cnt.size + 1)
-        c1 = np.unique(maps.T[7], return_index=True)[1]
-        c2 = np.unique(maps[c1, 8], return_index=True, return_counts=True)
-        c = [[], c1[c2[1]], c2[2]]
-        
-        maps[c[1], 8] = taxa_cnt[barcodes[maps[c[1], 1].astype(int), id]]
-        maps[c[1], 9] = c[2]
-        r_weight = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 10] )
-        r_weight[r_weight == 0] = 1
-        r_present = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 9]*maps[c[1], 10] )/r_weight
-        r_total = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 8]*maps[c[1], 10] )/r_weight
-        #p = (r_total > 0)
-        lk1 = np.log(prior) + r_present*np.log(c_p) + (r_total-r_present)*np.log(1-c_p)
-        lk1[lk1<-700] = -700
-        lk2 = np.log(1-prior) + r_present*np.log(a_p) + (r_total-r_present)*np.log(1-a_p)
-        lk2[lk2<-700] = -700
-        lk1, lk2 = np.exp(lk1), np.exp(lk2)
-        r_total = lk1/(lk1 + lk2)
-        conservation = conservation*(1-r_total)
-        
-    maps[:, 9] = 1-conservation[maps[:,0].astype(int)]
+    maps[:, 9] = 1
     print time.time()-o_t, "conservation score."
     sys.stdout.flush()
     
-    # remove a non-specific match if it is 5 SNP more divergent than the best match
-    maps = maps[ maps.T[10] >= np.power(mismatch/(1-mismatch), 5) ]
+    # remove a non-specific match if it is 2 SNP more divergent than the best match
+    maps = maps[ maps.T[10] >= np.power(mismatch/(1-mismatch), 2) ]
     print time.time()-o_t, "remove highly divergent hits."
     sys.stdout.flush()
     
-    # # PER match depth weighting
-    # encode every 0.5 / 2 kb 
-    seqinfo = seqinfo[np.in1d(seqinfo.T[2], maps.T[1])]
-    seqlen = np.bincount(seqinfo.T[0], seqinfo.T[1])
     maps.T[8] = 1
-    maps[seqlen[maps.T[2].astype(int)] < 500, 8] = 0
-    for fid, fragment_len in enumerate(sparsity_blocks) :
-        cov_score = np.zeros(shape=maps.shape[0], dtype=float)
-        seq_info = np.zeros(shape=[np.max(seqinfo.T[0])+1, 5], dtype=int)
-        seq_info[seqinfo.T[0], 0] = seqinfo.T[1]
-        seq_info[seqinfo.T[0], 4] = seqinfo.T[2]
-        seq_info.T[1] = 1+(seq_info.T[0]/fragment_len)
-        seq_info.T[2, 0], seq_info.T[2, 1:] = 1, np.cumsum(seq_info.T[1,:-1]+1) + 1
-        seq_info.T[3] = np.sum(seq_info[:, 1:3], 1)
-        #
-        # get depth for every region
-        regions = np.zeros(shape=seq_info[-1, 3]+1)
-        cov_score = seq_info[maps.T[2].astype(int), 2] + (maps.T[3]/fragment_len).astype(int)
-        regions[:(np.max(cov_score).astype(int)+1)] = np.bincount(cov_score.astype(int), weights=maps.T[10])
-        # -- correct for continuity
-        
-        cov_score = regions[cov_score.astype(int)]
-        print time.time()-o_t, "Start to run depth weighting."
-        sys.stdout.flush()
-        
-        # tax_list = [[tax_id, region_start, region_end]]
-        tax_ids = np.unique(seq_info.T[4], return_index=True)
-        tax_list = np.vstack([tax_ids[0],tax_ids[1]])[:, np.argsort(tax_ids[1])].astype(float)
-        tax_list = np.vstack([tax_list, np.concatenate([tax_list[1][1:], [seq_info.shape[0]]])  ]).T
-        
-        # get mean depth
-        for tid, (tax_id, s, e) in enumerate(tax_list.astype(int)) :
-            reg = regions[seq_info[s][2]:seq_info[e-1][3]] # np.concatenate([ np.arange(seq_info[ss][2], seq_info[ss][3]) for ss in np.arange(s, e) ])
-            mean_cov = .5
-            if np.max(reg) > 1 :
-                mean_cov = np.mean(reg[reg>=0])
-            tax_list[tid][1] = mean_cov
-            
-        mean_covs = np.bincount(tax_list.T[0].astype(int), tax_list.T[1])
-        #default_lks = np.bincount(tax_list.T[0].astype(int), tax_list.T[2])
-        #cov_score[np.ceil(cov_score) <= np.ceil(mean_covs[maps.T[1].astype(int)])] = 0.0
-        cov_score = dpois(mean_covs[maps.T[1].astype(int)], cov_score)
-        maps[maps.T[8] > 0, 8] = np.exp(cov_score[maps.T[8] > 0]) * maps[maps.T[8] > 0, 8]
-    
-        # # generalized weights for mapping depth
-    map_dense = np.bincount(maps.T[0].astype(int), weights=maps.T[10]*np.power(maps.T[8], 1.0/len(sparsity_blocks)))
-    #map_dense = np.bincount(maps.T[0].astype(int), weights=maps.T[10]*maps.T[8])
-    map_score = np.bincount(maps.T[0].astype(int), weights=maps.T[10])
-    map_dense[map_score >0] = map_dense[map_score > 0]/map_score[map_score>0]
-    maps.T[8] = map_dense[maps.T[0].astype(int)]
-    
     # # summarise maps.T[6] (similarity weighting),    maps.T[8] (depth weighting),    maps.T[9] (conservation weighting)
     maps.T[6] = np.exp(maps.T[6])
     maps.T[7] = maps.T[8]*maps.T[9]
@@ -199,7 +96,7 @@ def summary_matrix(data, MapDB, workspace, bowtie_db, mismatch=0.05, n_thread=10
     maps = parse_mapping(data, seqinfo, maps, mismatch)
     
     for mid in xrange(0, maps.shape[0], 20000000) :
-        maps[mid:(mid+20000000)].dump( os.path.join(workspace, 'read_scores.{0}.npy'.format(mid/20000000)) )
+        maps[mid:(mid+20000000)].dump( os.path.join(workspace, 'sigma_scores.{0}.npy'.format(mid/20000000)) )
     
     return maps
 
@@ -210,7 +107,7 @@ def searchDBs(bowtie_db, MapDB) :
         assert os.path.isfile(master_file), 'some database is not present'
         for fname in glob.glob(os.path.join(bowtie_db, '{0}.*.taxa.gz'.format(mdb))) :
             db_list.append(fname[:-8])
-    return sorted(db_list)
+    return db_list
 
 def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=10, **params) :
     def convert_file(source, target) :
@@ -260,7 +157,7 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
     for db_prefix in db_list :
         out_prefix = os.path.join(workspace, db_prefix.rsplit('/', 1)[-1])
         if os.path.isfile(db_prefix+'.4.bt2') :
-            cmd_bt2 = '{0} -k 300 --no-unal --ignore-quals --score-min L,20,1.1 --mp 4,4 --np 4 --sensitive-local -q -p {2} -I 25 -X 800 -x {3} {1}'.format(
+            cmd_bt2 = '{0} -k 300 --no-unal --ignore-quals --score-min L,20,1.1 --mp 6,6 --np 6 --sensitive-local -q -p {2} -I 25 -X 800 -x {3} {1}'.format(
                 params['bowtie2'], read_info, n_thread, db_prefix)
             run_bt2 = subprocess.Popen(cmd_bt2.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
@@ -279,12 +176,8 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                     part = line.strip().split()
                     if part[2] in seqs :
                         key = (part[0], int(part[1]) & 128)
-                        key2 = (part[0], 128-key[1])
-                        if key not in prev:
-                            if key2 not in prev :
-                                prev = {key:{}}
-                            else :
-                                prev[key] = {}
+                        if key not in prev :
+                            prev = {key:{}}
                             
                         if seqs[part[2]][0] not in prev[key] :
                             s = [int(l) for l in re.findall('(\d+)S', part[5])]
@@ -294,8 +187,8 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                                 prev[key][seqs[part[2]][0]] = 1
                         else :
                             continue
-                        score = int(part[11][5:]) + (0 if len(s) == 0 else max(s)*1.5)
-                        mut = (len(part[9])*2 - score)/6.0
+                        score = int(part[11][5:]) + (0 if len(s) == 0 else max(s)*1.2)
+                        mut = (len(part[9])*2 - score)/8.0
                         nom = len(part[9]) - mut
                         res.append([ int(part[0]),        # read ID
                                      seqs[part[2]][0],    # taxa ID
@@ -306,7 +199,7 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                                     ])
         else :
             for read in read_info.split()[1::2] :
-                cmd_malt = '{0} -m BlastN -i {1} -a {4} -t {2} -mq 200 -e 0.00001 -id 70 -mem load -d {3}.malt'.format(
+                cmd_malt = '{0} -m BlastN -i {1} -a {4} -t {2} -mq 200 -id 70 -mem load -d {3}.malt'.format(
                     params['malt_run'], read, n_thread, db_prefix, out_prefix+'.tmp.gz')
                 subprocess.Popen(cmd_malt.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
                 
@@ -328,12 +221,8 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                             part = line.strip().split()
                             if part[2] in seqs :
                                 key = (part[0], int(part[1]) & 128)
-                                key2 = (part[0], 128-key[1])
-                                if key not in prev:
-                                    if key2 not in prev :
-                                        prev = {key:{}}
-                                    else :
-                                        prev[key] = {}
+                                if key not in prev :
+                                    prev = {key:{}}
                                     
                                 if seqs[part[2]][0] not in prev[key] :
                                     s = [int(l) for l in re.findall('(\d+)H', part[5])]
@@ -387,44 +276,29 @@ def ipopt(workspace, least_amount=[0.0000005, 5], bootstrap=100, **params) :
     for ite in xrange(bootstrap+1) :
         maps = []
         for id in xrange(99999) :
-            if os.path.isfile(os.path.join(workspace, 'read_scores.{0}.npy'.format(id))) :
-                maps.append(np.load(os.path.join(workspace, 'read_scores.{0}.npy'.format(id))))
+            if os.path.isfile(os.path.join(workspace, 'sigma_scores.{0}.npy'.format(id))) :
+                maps.append(np.load(os.path.join(workspace, 'sigma_scores.{0}.npy'.format(id))))
             else :
                 break
         maps = np.vstack(maps)
         
-        maps = maps[(maps.T[9] >= 0.01) & (maps.T[8] >= 0.01) & (maps.T[7]>= 0.001) ]
-        if ite > 0 :
-            maps = maps[ np.random.randint(0, maps.shape[0], maps.shape[0]) ]
-    
-        picked = []
-        workon = np.copy(maps)
-        r_limit = max(n_read*least_amount[0], least_amount[1])
-        while True :
-            tax_match = np.bincount(workon.T[1].astype(int), weights=workon.T[10]*workon.T[7])
-            if tax_match.size == 0 : break
-            tax_id = np.argmax(tax_match)
-            if np.sum(workon[workon.T[1] == tax_id, 10]) < r_limit :
-                break
-            picked.append([tax_id, tax_match[tax_id]])
-            workon = workon[(~np.in1d(workon.T[0], workon[(workon.T[1] == tax_id) & (workon.T[10] >= 0.5), 0])) & (workon.T[1] != tax_id)]
-        picked = np.array(picked)
-        if picked.shape[0] > 5000 :
-            r_limit = max(n_read*least_amount[0]*5, least_amount[1]*2)
-            picked = picked[ picked.T[1] >= r_limit ]
+        tax_cnt = np.array(list(np.unique(maps.T[1], return_counts=True))).T
+        tax_cnt.T[1] *= 100.0/n_read
+        tax_cnt = tax_cnt[tax_cnt.T[1] > 0.01]
+        picked = tax_cnt[np.argsort(-tax_cnt.T[1])]
         
         print time.time()-o_t, "got candidates."
         sys.stdout.flush()
         
         maps = maps[np.in1d(maps.T[1], picked.T[0])]
         maps = maps[np.lexsort([-maps.T[10], maps.T[0]])]
-        fname = os.path.join(workspace, 'ipopt.qmatrix') if ite == 0 else os.path.join(workspace, 'ipopt.bootstrap.{0}'.format(ite))
+        fname = os.path.join(workspace, 'sigma.qmatrix') if ite == 0 else os.path.join(workspace, 'sigma.bootstrap.{0}'.format(ite))
         with open(fname, 'w') as fout :
             fout.write('''#\t+\tMatrixName\tTotalNumberReads\tMatchedReads\tUnmatchedReads\ReadLimit
 #\t@\tGenomeIndex\tGenomeName\tMatchedNumber
 #\t*\tReadID\tWeight\tGenomeIndex=QValue
 +\t{0}\t{1}\t{2}\t{3}\t{4}
-'''.format(fname, n_read, (np.unique(maps.T[0])).size, n_read-(np.unique(maps.T[0])).size, r_limit))
+'''.format(fname, n_read, (np.unique(maps.T[0])).size, n_read-(np.unique(maps.T[0])).size, 0))
             oid = {}
             for id, (t, c) in enumerate(picked) :
                 fout.write('@\t{0}\t{1}\t{2}\n'.format(id, int(t), c))
@@ -440,13 +314,13 @@ def ipopt(workspace, least_amount=[0.0000005, 5], bootstrap=100, **params) :
             write_down(fout, reads, w)
         
         subprocess.Popen('{ipopt} -t {n_thread} -i {0}'.format(fname, **params).split()).communicate()
-    return os.path.join(workspace, 'ipopt.qmatrix.solution')
+    return os.path.join(workspace, 'sigma.qmatrix.solution')
 
 def assign_reads(data, qvector, workspace, **params) :
     maps = []
     for id in xrange(99999) :
-        if os.path.isfile(os.path.join(workspace, 'read_scores.{0}.npy'.format(id))) :
-            maps.append(np.load(os.path.join(workspace, 'read_scores.{0}.npy'.format(id))))
+        if os.path.isfile(os.path.join(workspace, 'sigma_scores.{0}.npy'.format(id))) :
+            maps.append(np.load(os.path.join(workspace, 'sigma_scores.{0}.npy'.format(id))))
         else :
             break
     maps = np.vstack(maps)
@@ -502,7 +376,7 @@ def assign_reads(data, qvector, workspace, **params) :
             read[m[0]][-1][1] +=m[10]
             continue
         read[m[0]].append([m[1].astype(int), m[10], m[4], m[5]])
-    with gzip.open(os.path.join(workspace, 'read_assignment.gz'), 'w') as fout :
+    with gzip.open(os.path.join(workspace, 'sigma_assignment.gz'), 'w') as fout :
         fout.write('#\tReadID\tReadName\tDepth_Weight\tCore_Weight\tReferenceID:Proportion:Distance:MeanDistance\n')
         fin = gzip.open(params['r1']) if params['r1'].endswith('.gz') else open(params['r1'])
         line = fin.readline()
@@ -604,7 +478,7 @@ def profiling(data, assign, **params) :
     groups = group_major(data, match_group, **params)
     basic_aln[0] = [basic_aln[0], basic_aln[0]*basic_aln[1][1]/basic_aln[1][0]]
     tot_weight = basic_aln[0][1] + basic_aln[1][1]
-    with open(os.path.join(params['workspace'], 'profile.txt'), 'w') as fout :
+    with open(os.path.join(params['workspace'], 'sigma_profile.txt'), 'w') as fout :
         fout.write('Total\t{0}\t{1}\n'.format(basic_aln[0][0]+basic_aln[1][0], basic_aln[1][0]))
         fout.write('Unmatched\t{0:.3f}\t{1:.3f}\n'.format(basic_aln[0][1]*100.0/tot_weight, 0.0))
         fout.write('Uncertain_match\t{0:.3f}\t{1:.3f}\n'.format(basic_aln[2][1]*100.0/tot_weight, basic_aln[2][1]*100.0/basic_aln[1][1]))
@@ -615,6 +489,7 @@ def profiling(data, assign, **params) :
 if __name__ == '__main__' :
     params = utils.load_params(sys.argv)
     params['bootstrap'] = int(params['bootstrap']) if 'bootstrap' in params else 0
+    params['stage'] = '1'
         
     data = utils.load_database(**params)
     
@@ -626,13 +501,9 @@ if __name__ == '__main__' :
     if params.get('stage', '0') in '012' :    
         qvector = ipopt(**params)
     if params.get('stage', '0') in '0123' :
-        qvector = os.path.join(params['workspace'], 'ipopt.qmatrix.solution')
+        qvector = os.path.join(params['workspace'], 'sigma.qmatrix.solution')
         assign_reads(data, qvector, **params)
     if params.get('stage', '0') in '01234' :
-        assign = os.path.join(params['workspace'], 'read_assignment.gz')
+        assign = os.path.join(params['workspace'], 'sigma_assignment.gz')
         profiling(data, assign, **params)
     
-    import glob
-    for fname in glob.glob(os.path.join(params['workspace'], 'r?.fastq')) :
-        subprocess.Popen(['gzip', '-f', fname]).communicate()
-        #os.unlink(fname)
