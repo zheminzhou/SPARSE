@@ -11,7 +11,10 @@ def create_db(data) :
             fname = g[2]
         else :
             fname = g[3].rsplit('/', 1)[-1]
-            utils.get_file(g[3], fname)
+            try:
+                utils.get_file(g[3], fname)
+            except :
+                pass
         show_cmd = 'gzip -cd' if fname.upper().endswith('.GZ') else 'cat'
         try:
             show_run = subprocess.Popen("{0} {1}|tee -a '{2}'|grep '^>'".format(show_cmd, fname, dbname), shell=True, stdout=subprocess.PIPE)

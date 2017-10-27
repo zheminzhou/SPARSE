@@ -1,7 +1,11 @@
 # utils.py
 
-import os, sys, subprocess, ujson as json, numpy as np, urllib2, pandas as pd
+import os, sys, subprocess, numpy as np, urllib2, pandas as pd
 import contextlib, time
+try :
+    import ujson as json
+except :
+    import json
 
 def load_database(**params) :
     exist_db = os.path.join(params['dbname'], 'db_metadata.msg')
@@ -17,7 +21,7 @@ try :
     import capnp
     capnp.remove_import_hook()
     
-    def run_mash(data) :
+    def run_mash(data, is_read=False) :
         msh_file, ref_msh, n_thread, params = data
 
         minihash = capnp.load('minihash.capnp')
@@ -28,8 +32,11 @@ try :
         if ref_msh is None :
             mash_db, sub_db_level = params['mash_db'], params['representative_level']
             report_neighbor, deep_search = params['barcode_dist'][0]*1.2, params['barcode_dist'][max(sub_db_level-1, 0)]
-
-            init_dbs = [ os.path.join(mash_db, msh_db['name']) for msh_db in params['default_mash'] if size >= msh_db['min'] and size <= msh_db['max'] ]
+            
+            if not is_read :
+                init_dbs = [ os.path.join(mash_db, msh_db['name']) for msh_db in params['default_mash'] if size >= msh_db['min'] and size <= msh_db['max'] ]
+            else :
+                init_dbs = [ os.path.join(mash_db, msh_db['name']) for msh_db in params['default_mash'] ]
 
             msh_dbs = []
             for default_db in init_dbs :
@@ -61,9 +68,8 @@ try :
 except :
     pass
 
-
 def get_file(url, fname) :
-    for ite in xrange(10) :
+    for ite in xrange(30) :
         try :
             req = urllib2.urlopen(url, timeout=2)
             CHUNK = 16 * 1024
@@ -73,10 +79,10 @@ def get_file(url, fname) :
                     if not chunk:
                         break
                     fout.write(chunk)
-            break
+            return fname
         except :
             time.sleep(2)
-    return fname
+    raise Exception('Downloading failed')
 
 def load_params(argv) :
     c2 = dict([[ k.strip() for k in arg.split('=', 1)] for arg in argv[1:]])
@@ -90,6 +96,8 @@ def load_params(argv) :
                 c2[k] = int(c2[k])
             elif isinstance(config[k], float) :
                 c2[k] = float(c2[k])
+            elif isinstance(config[k], list) or isinstance(config[k], dict) :
+                c2[k] = json.loads(c2[k])
     config.update(c2)
     for k in config :
         if isinstance(config[k], basestring) and '{' in config[k] :
@@ -169,18 +177,22 @@ def retrieve_info(group, data=None, **params) :
     g['representative'] = {'assembly_accession':rep.assembly_accession, 'organism_name':rep.organism_name}
     g['taxonomy'] = []
     for tlevel in params['taxa_columns'] :
-        r = np.unique(d[tlevel].as_matrix(), return_counts=True)
-        g['taxonomy'].append( dict(rank=tlevel, freq=[dict(count=c, taxon=t) for c, t in sorted(zip(r[1], r[0]))] ))
+        r = list(np.unique(d[tlevel].as_matrix(), return_counts=True))
+        r[0], r[1] = r[0][np.argsort(-r[1])], r[1][np.argsort(-r[1])]
+        r[0], r[1] = r[0][r[1] > r[1][0]*0.1], r[1][r[1] > r[1][0]*0.1]
+        g['taxonomy'].append( dict(rank=tlevel, freq=[dict(count=c, taxon=t) for c, t in zip(*r)] ))
     return g
 
 
 def get_taxonomy(**param) :
-    names = {}
+    names, authority = {}, {}
     with open(os.path.join(param['taxonomy_db'], 'names.dmp')) as fin :
         for line in fin :
             part = line.strip().split('\t')
             if part[6] == 'scientific name' :
                 names[part[0]] = part[2]
+            elif part[6] in ('authority', 'type material', 'genbank common name', 'common name') :
+                authority[part[0]] = 1
     children = {}
     nodes = {'1':[]}
     category = { t:1 for t in param['taxa_columns'] }
@@ -188,7 +200,13 @@ def get_taxonomy(**param) :
         fin.readline()
         for line in fin :
             part = line.strip().split('\t')
-            nodes[part[0]] = [[part[4], names.get(part[0], '')]] if part[4] in category else []
+            if part[4] in category :
+                if part[4] != 'species' or part[0] in authority :
+                    nodes[part[0]] = [[part[4], names.get(part[0], '')]]
+                else :
+                    nodes[part[0]] = [[part[4], '*' + names.get(part[0], '')]]
+            else :
+                nodes[part[0]] = []
             if part[2] not in children :
                 children[part[2]] = [part[0]]
             else :

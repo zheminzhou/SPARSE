@@ -43,15 +43,17 @@ default_param = dict(
                         ), dict(
                             MapDB='subpopulation', tag='p!=r;p==a', min=0, max=100000000, superkingdom='Bacteria,Archaea',
                         ), dict(
-                            MapDB='Eukaryota',     tag='p==a',      min=0, max=500000000, superkingdom='Eukaryota,-',
+                            MapDB='Eukaryota',     tag='p==a',      min=0, max=200000000, superkingdom='Eukaryota,-',
                     )],
     
     msh_param = '-k 23 -s 4000 -S 42', 
     mismatch = 0.05,
     n_thread = 20,
     representative_level = 2,
-    virus_size = 50000,
-    default_ref_size = 150000000,
+    minFreq = 0.0001, # minFreq = 0.000001 reserve for ancient DNA samples
+    minNum = 10,       # minNum = 5 reserve for ancient DNA samples
+    HGT_prior = [[0.05, 0.99, 0.1], [0.02, 0.99, 0.2], [0.01, 0.99, 0.5]], 
+    UCE_prior = [487, 2000], 
 )
 
 if __name__ =='__main__' :
