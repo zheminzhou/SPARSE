@@ -10,3 +10,6 @@ In order to do read-level taxonomic binning, representative databases need to be
 
 ### ANI 99% eukaryota database (genome size <= 200MB)
 `python 03_db_MapDB.py dbname=refseq update=Eukaryota | python 03_db_MapDB.py dbname=refseq update=Eukaryota seqlist=stdin`
+
+### custom database
+In order to index a differet set of references into a representative database, see [here](custom.md)
