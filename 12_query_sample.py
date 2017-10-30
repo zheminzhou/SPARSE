@@ -20,24 +20,37 @@ if __name__ == '__main__' :
     os.unlink(msh_file)
     
     if len(result) > 0 :
+        r_id = np.array([r[2] for r in result])
+        result = np.array([r[1].split('.') for r in result])
+        result, r_id = result[(1-r_id >= 0.98* (1-r_id[0])) & (r_id <= params['barcode_dist'][0])], r_id[(1-r_id >= 0.98* (1-r_id[0])) & (r_id <= params['barcode_dist'][0])]
+
         groups = {}
-        matches = []
-        for qry, hit, dist in result :
-            if (1-dist) < (1 - result[0][2])*0.95 :
-                break
-            code = []
-            for id, g in enumerate(hit.split('.')[:-1]) :
-                if params['barcode_dist'][id] >= dist :
-                    code.append(g[1:])
-                    if tuple(code) not in groups :
-                        groups[tuple(code)] = [dist, -id, hit]
-                else :
-                    break
-            matches.append(dict(record=hit, similarity=1.0-dist, organism_name=data[data['index'] == hit.rsplit('.', 1)[-1][1:]]['organism_name'].tolist()[0]))
-        groups = [dict(group='.'.join(['{0}{1}'.format(t,k) for t,k in zip(params['barcode_tag'][:len(c)], c)]), similarity=1.0-d[0]) for c, d in sorted(groups.iteritems(), key=lambda x:x[1])]
+        m = {'a'+k:[n, a] for k, n, a in data[['index', 'organism_name', 'assembly_accession']].as_matrix()}
+        matches = [ dict(record='.'.join(r), similarity=1-i, organism_name=m[r[-1]][0], assembly_accession=m[r[-1]][1]) for r, i in zip(result, r_id) ]
+        for id, (dcut, dgroup) in enumerate(zip(params['barcode_dist'], result.T[:-1])) :
+            dgroup[r_id > dcut] = ''
+            g = np.unique(dgroup, return_index=True)
+            tags = ['.'.join(r) for r in result[g[1], :(id+1)] if r[-1] != '']
+            info = [ [i, -id, '.'.join(hit)] for i, hit in zip(r_id[g[1]], result[g[1]]) if hit[id] != '' ]
+            for t, i in zip(tags, info) :
+                groups[t] = i
+
+        #for qry, hit, dist in result :
+            #if (1-dist) < (1 - result[0][2])*0.95 :
+                #break
+            #code = []
+            #for id, g in enumerate(hit.split('.')[:-1]) :
+                #if params['barcode_dist'][id] >= dist :
+                    #code.append(g[1:])
+                    #if tuple(code) not in groups :
+                        #groups[tuple(code)] = [dist, -id, hit]
+                #else :
+                    #break
+        #matches.append(dict(record=hit, similarity=1.0-dist, organism_name=data[data['index'] == hit.rsplit('.', 1)[-1][1:]]['organism_name'].tolist()[0]))
+        groups = [dict(group=c, similarity=1.0-d[0]) for c, d in sorted(groups.iteritems(), key=lambda x:x[1])]
         for g in groups :
             g.update(utils.retrieve_info(g['group'], data=data, **params))
-        result = groups[0]['group']
+        #result = groups[0]['group']
     else :
-        groups, matches, result = [], [], 'unknown record'
-    print json.dumps(dict(groups=groups, matches=matches, result=result), sort_keys=True, indent=2)
+        groups, matches, result = [], [], 'unknown'
+    print json.dumps(dict(groups=groups, matches=matches), sort_keys=True, indent=2)
