@@ -11,4 +11,4 @@ You can also custom the representative databases. Here a human genome is used as
 * This file can be used as an input to build a new representative database named "Human" :
 `python 03_db_MapDB.py dbname=refseq MapDB=Human seqlist=human.tsv`
 
-## Metagenomic reads were assigned using these representative databases, details see [the "read-level prediction" section](map.md).
+#### Metagenomic reads were assigned using these representative databases, details see [the "read-level prediction" section](map.md).
