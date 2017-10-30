@@ -70,4 +70,5 @@ You can also specify the pointer to each executable :
 `db_columns = ['index', 'deleted', 'barcode', 'sha256', 'size']`
 
 `metadata_columns = ['assembly_accession', 'version', 'refseq_category', 'assembly_level', 'taxid', 'organism_name', 'file_path', 'url_path']`
-taxa_columns = ['subspecies', 'species', 'genus','family', 'order', 'class', 'phylum', 'kingdom', 'superkingdom'],`
+
+`taxa_columns = ['subspecies', 'species', 'genus','family', 'order', 'class', 'phylum', 'kingdom', 'superkingdom'],`
