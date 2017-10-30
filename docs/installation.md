@@ -27,8 +27,8 @@ Python modules (installed via pip):
 * malt (>=0.4.0) not essential
 
 ### Download and install the software
-`git clone https://github.com/zheminzhou/SPARSE` 
-`cd SPARSE/EM && make` 
+`git clone https://github.com/zheminzhou/SPARSE`  
+`cd SPARSE/EM && make`  
 Change the [parameters](parameter.md) if needed. 
 
 ### Update SPARSE
