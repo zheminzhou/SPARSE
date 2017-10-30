@@ -12,6 +12,6 @@ You first need to find out the indices of the interesting references in the [out
 
 `python 21_get_specific_reads.py dbname=refseq workspace=read1 ref_id=<comma delimited indices>`
 
-* For example, we want reference id 16 in [the example](output.md), which is a Vibrio cholerae genome. 
+* For example, we extract all reads specific to reference id 16 [here](output.md), which is a Vibrio cholerae genome. 
 
 `python 21_get_specific_reads.py dbname=refseq workspace=read1 ref_id=16`
