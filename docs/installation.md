@@ -12,6 +12,7 @@ System modules (Ubuntu 16.04) :
 * libncurses5-dev
 * cmake
 * capnproto
+* xvfb-run (for malt, not essential)
 
 Python modules (installed via pip):
 
@@ -29,8 +30,9 @@ Python modules (installed via pip):
 * malt (>=0.4.0) not essential
 
 ### Download and install the software
-`git clone https://github.com/zheminzhou/SPARSE`
-`cd SPARSE/EM && make`
+`git clone https://github.com/zheminzhou/SPARSE` 
+`cd SPARSE/EM && make` 
+Change the [parameters](parameter.md) if needed. 
 
 ### Update SPARSE
 To update SPARSE, move to installation directory and pull the latest version:  
@@ -38,4 +40,4 @@ To update SPARSE, move to installation directory and pull the latest version:
 `git pull` 
 
 ## Next step
-[Step-by-step tutorial](docs/tutorial.md)
+[Step-by-step tutorial](tutorial.md)
