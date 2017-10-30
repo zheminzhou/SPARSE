@@ -1,14 +1,14 @@
 * All the default parameters are stored in 00_sparse_parameter.py.
 * Some parameters need to be specified during installation, while others can be changed for each database or for each SPARSE run
 
-#### parameters that need to be specified during installation
+### parameters that need to be specified during installation
 You need only point BIN to a folder that contains all executables, such as
 
-* BIN = '/usr/local/bin/',
+* BIN = '/usr/local/bin/'
 
-Alternatively, if you have all executable in your PATH, `BIN = ''`.
+Alternatively, if you have all executable in your `PATH`, use `BIN = ''`.
 
-Or you can change the pointer for each executable
+You can also specify the pointer to each executable :
 
 `mash = '{BIN}mash',
 bowtie2 = '{BIN}bowtie2',
@@ -17,7 +17,7 @@ samtools = '{BIN}samtools',
 malt_run = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-run',
 malt_build = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-build',`
 
-#### parameters that can be specified on-fly. You can also modify their default values in each database, in the file: `/path/to/sparse/database/dbsetting.cfg`
+### parameters that can be specified on-fly. You can also modify their default values in each database, in the file: `/path/to/sparse/database/dbsetting.cfg`
 
 `mismatch = 0.05,                                                       # mismatch parameter is used in the probalistic model. Given a higher value will report less references, otherwise more
 n_thread = 20,                                                          # number of threads for SPARSE. Higher value can accelerate the program
@@ -27,9 +27,8 @@ minNum = 10,                                                            # Minimu
 HGT_prior = [[0.05, 0.99, 0.1], [0.02, 0.99, 0.2], [0.01, 0.99, 0.5]],  # parameters to identify core genomic regions. Suggest to use default values
 UCE_prior = [487, 2000],                                                # parameters to identify ultra-conserved elements. Suggest to use default values`
 
-#### parameters to construct SPARSE databases, only for advanced uses:
-`
-msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings
+### parameters to construct SPARSE databases, only for advanced uses:
+`msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings
 
 # following three parameters are pointers to corresponding sub-folders. Change them if you want the actual data in a different folder than the database
 mash_db = '{dbname}/mash_db',
