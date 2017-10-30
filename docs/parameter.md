@@ -3,25 +3,25 @@ All the default parameters are stored in [parameter.py](../parameter.py). Some p
 #### parameters that need to be specified during installation
 You need only point `BIN` to a folder that contains all executables, such as
 
-`BIN = '/usr/local/bin/'`
+* `BIN = '/usr/local/bin/'`
 
 Alternatively, if you have all executable in your `PATH`, use 
 
-`BIN = ''`
+* `BIN = ''`
 
 You can also specify the pointer to each executable :
 
-`mash = '{BIN}mash',`
+* `mash = '{BIN}mash',`
 
-`bowtie2 = '{BIN}bowtie2',`
+* `bowtie2 = '{BIN}bowtie2',`
 
-`bowtie2_build = '{BIN}bowtie2-build',`
+* `bowtie2_build = '{BIN}bowtie2-build',`
 
-`samtools = '{BIN}samtools',`
+* `samtools = '{BIN}samtools',`
 
-`malt_run = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-run',`
+* `malt_run = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-run',`
 
-`malt_build = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-build',`
+* `malt_build = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-build',`
 
 
 #### The following parameters that can be specified on-fly. Their default values for ech database are stored in: `/path/to/sparse/database/dbsetting.cfg`
@@ -40,29 +40,33 @@ You can also specify the pointer to each executable :
 
 * `UCE_prior = [487, 2000],                                                # parameters to identify ultra-conserved elements. Suggest to use default values`
 
-### parameters to construct SPARSE databases, only for advanced uses:
-`msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings
+#### parameters to construct SPARSE databases, only for advanced uses:
+`msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings`
 
-# following three parameters are pointers to corresponding sub-folders. Change them if you want the actual data in a different folder than the database
-mash_db = '{dbname}/mash_db',
-bowtie_db = '{dbname}/bowtie_db',
-placer_db = '{dbname}/placer_db',
-taxonomy_db = '{dbname}/taxonomy',
+`# following three parameters are pointers to corresponding sub-folders. Change them if you want the actual data in a different folder than the database`
+* `mash_db = '{dbname}/mash_db',`
 
-# hierarchical clustering levels
-barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005],
-barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a'],
+* `bowtie_db = '{dbname}/bowtie_db',`
 
-# default databases
-default_mash = [dict(
-						name='virus.msh',      ref=120000,       max=250000,       min=0,
-					), dict(
-						name='default.msh',    ref=6000000,      max=10000000,     min=50000,
-					), dict(
-						name='large.msh',      ref=12000000,     max=25000000,     min=2500000,
-					), dict(
-						name='eukaryota.msh',  ref=120000000000, max=250000000000, min=5000000,
-				)],
+* `placer_db = '{dbname}/placer_db',`
+
+* `taxonomy_db = '{dbname}/taxonomy',`
+
+`# hierarchical clustering levels`
+
+* `barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005],`
+* `barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a'],`
+
+`# default databases`  
+* `default_mash = [dict(`  
+`						name='virus.msh',      ref=120000,       max=250000,       min=0,`
+`					), dict(`
+`						name='default.msh',    ref=6000000,      max=10000000,     min=50000,`
+`					), dict(`
+`						name='large.msh',      ref=12000000,     max=25000000,     min=2500000,`
+`					), dict(`
+`						name='eukaryota.msh',  ref=120000000000, max=250000000000, min=5000000,`
+`				)],`
 default_bowtie = [dict(
 						MapDB='Virus',         tag='p==a',      min=0, max=100000000, superkingdom='Viroids,Viruses',
 					), dict(
