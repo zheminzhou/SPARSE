@@ -44,6 +44,7 @@ You can also specify the pointer to each executable :
 `msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings`
 
 `# following three parameters are pointers to corresponding sub-folders. Change them if you want the actual data in a different folder than the database`
+
 * `mash_db = '{dbname}/mash_db',`
 
 * `bowtie_db = '{dbname}/bowtie_db',`
@@ -52,35 +53,21 @@ You can also specify the pointer to each executable :
 
 * `taxonomy_db = '{dbname}/taxonomy',`
 
-`# hierarchical clustering levels`
+`# parameters for hierarchical clustering levels`
 
 * `barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005],`
+
 * `barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a'],`
 
-`# default databases`  
-* `default_mash = [dict(`  
-`						name='virus.msh',      ref=120000,       max=250000,       min=0,`
-`					), dict(`
-`						name='default.msh',    ref=6000000,      max=10000000,     min=50000,`
-`					), dict(`
-`						name='large.msh',      ref=12000000,     max=25000000,     min=2500000,`
-`					), dict(`
-`						name='eukaryota.msh',  ref=120000000000, max=250000000000, min=5000000,`
-`				)],`
-default_bowtie = [dict(
-						MapDB='Virus',         tag='p==a',      min=0, max=100000000, superkingdom='Viroids,Viruses',
-					), dict(
-						MapDB='representative',tag='r==a',      min=0, max=100000000, superkingdom='Bacteria,Archaea',
-					), dict(
-						MapDB='subpopulation', tag='p!=r;p==a', min=0, max=100000000, superkingdom='Bacteria,Archaea',
-					), dict(
-						MapDB='Eukaryota',     tag='p==a',      min=0, max=200000000, superkingdom='Eukaryota,-',
-				)],
-representative_level = 2,`
+* `representative_level = 2,`
 
 #### These parameters are for experts, and have not been tested for varied values
-`SPARSE = sparse_folder,
-ipopt = '{SPARSE}/EM/solve-model',
-db_columns = ['index', 'deleted', 'barcode', 'sha256', 'size'],
-metadata_columns = ['assembly_accession', 'version', 'refseq_category', 'assembly_level', 'taxid', 'organism_name', 'file_path', 'url_path'],
+
+`SPARSE = sparse_folder`
+
+`ipopt = '{SPARSE}/EM/solve-model'`
+
+`db_columns = ['index', 'deleted', 'barcode', 'sha256', 'size']`
+
+`metadata_columns = ['assembly_accession', 'version', 'refseq_category', 'assembly_level', 'taxid', 'organism_name', 'file_path', 'url_path']`
 taxa_columns = ['subspecies', 'species', 'genus','family', 'order', 'class', 'phylum', 'kingdom', 'superkingdom'],`
