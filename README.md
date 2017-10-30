@@ -4,7 +4,7 @@ SPARSE indexes >100,000 reference genomes in public databases in to hierarchical
 
 ## Table of Contents
 1. Getting started
- * [Installation](docs/install.md)  
+ * [Installation](docs/installation.md)  
  * [Step-by-step tutorial](docs/tutorial.md)  
 2. Reference cluster database 
  * [default database derived from NCBI RefSeq](docs/refseq.md)  
