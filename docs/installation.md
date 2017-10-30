@@ -6,12 +6,9 @@
 System modules (Ubuntu 16.04) :
 
 * gfortran
-* wget
-* curl
 * llvm
 * libncurses5-dev
 * cmake
-* capnproto
 * xvfb-run (for malt, not essential)
 
 Python modules (installed via pip):
