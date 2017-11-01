@@ -16,7 +16,6 @@ Python modules (installed via pip):
 * msgpack-python (>=0.4.8)
 * numpy (>=1.13.1)
 * pandas (>=0.20.3)
-* psycopg2 (>=2.6)
 * pycapnp (>=0.6.0)
 * ujson (>=1.35)
 
