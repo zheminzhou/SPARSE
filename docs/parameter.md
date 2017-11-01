@@ -24,7 +24,7 @@ You can also specify the pointer to each executable :
 * `malt_build = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-build',`
 
 
-#### The following parameters that can be specified on-fly. Their default values for ech database are stored in: `/path/to/sparse/database/dbsetting.cfg`
+#### The following parameters that can be specified on-fly. You can also specify there default values for each database in: `/path/to/sparse/database/dbsetting.cfg`
 
 
 * `mismatch = 0.05,                                                       # mismatch parameter is used in the probalistic model. Given a higher value will report less references, otherwise more`
