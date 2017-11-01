@@ -1,15 +1,15 @@
 All the default parameters are stored in [parameter.py](../parameter.py). Some parameters here need to be specified during installation, while others can be specified for each database or for each SPARSE run
 
 #### parameters that need to be specified during installation
-You need only point `BIN` to a folder that contains all executables, such as
+You need only point `BIN` to a folder that contains all the executables of the [dependencies](installation.md), e. g.
 
 * `BIN = '/usr/local/bin/'`
 
-Alternatively, if you have all executable in your `PATH`, use 
+Alternatively, if you have all executables in the system environmental parameter `$PATH`, use 
 
 * `BIN = ''`
 
-You can also specify the pointer to each executable :
+You can also specify a pointer for each executable file :
 
 * `mash = '{BIN}mash',`
 
