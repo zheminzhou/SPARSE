@@ -22,7 +22,7 @@ def save2mash(inputs, codes, **params) :
     for idx, _, fmsh, _, idx2 in inputs :
         c = '.'.join(['{0}{1}'.format(t,k) for t,k in zip(params['barcode_tag'], codes[idx] + [idx2])])
 
-        minihash = capnp.load('minihash.capnp')
+        minihash = capnp.load( os.path.join(os.path.dirname(os.path.realpath(__file__)), 'minihash.capnp') )
         msh = minihash.MinHash.read(open(fmsh,'r')).to_dict()
         msh['referenceList']['references'][0]['name'] = c
         size = msh['referenceList']['references'][0]['length64']
