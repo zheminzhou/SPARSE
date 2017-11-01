@@ -27,39 +27,39 @@ You can also specify the pointer to each executable :
 #### The following parameters that can be specified on-fly. You can also specify there default values for each database in: `/path/to/sparse/database/dbsetting.cfg`
 
 
-* `mismatch = 0.05,                                                       # mismatch parameter is used in the probalistic model. Given a higher value will report less references, otherwise more`
+* `mismatch = 0.05`                                                       # mismatch parameter is used in the probalistic model. Given a higher value will report less bins
 
 
-* `n_thread = 20,                                                          # number of threads for SPARSE. Higher value can accelerate the program`
+* `n_thread = 20`                                                          # number of threads for SPARSE. Higher value can accelerate the program
 
-* `minFreq = 0.0001,                                                       # Minimum frequencies of a strain to be reported. Use minFreq = 0.000001 for ancient DNA samples`
+* `minFreq = 0.0001`                                                       # Minimum frequencies of a strain to be reported. Use minFreq = 0.000001 for ancient DNA samples
 
-* `minNum = 10,                                                            # Minimum number of specific reads to report a strain. Use * minNum = 5 or less for ancient DNA samples`
+* `minNum = 10`                                                            # Minimum number of specific reads to report a strain. Use * minNum = 5 or less for ancient DNA samples
 
-* `HGT_prior = [[0.05, 0.99, 0.1], [0.02, 0.99, 0.2], [0.01, 0.99, 0.5]],  # parameters to identify core genomic regions. Suggest to use default values`
+* `HGT_prior = [[0.05, 0.99, 0.1], [0.02, 0.99, 0.2], [0.01, 0.99, 0.5]]`  # parameters to identify core genomic regions. Suggest to use default values
 
-* `UCE_prior = [487, 2000],                                                # parameters to identify ultra-conserved elements. Suggest to use default values`
+* `UCE_prior = [487, 2000]`                                                # parameters to identify ultra-conserved elements. Suggest to use default values
 
 #### parameters to construct SPARSE databases, only for advanced uses:
-`msh_param = '-k 23 -s 4000 -S 42',  # change the parameter for MASH program. reduce k and s accelerate the databsae index while allowing slightly more incorrect clusterings`
+`msh_param = '-k 23 -s 4000 -S 42'`                                        # change the parameter for the MASH program. reduce k and s accelerate the database indexing while bring in slightly more incorrect clusterings
 
 `# following three parameters are pointers to corresponding sub-folders. Change them if you want the actual data in a different folder than the database`
 
-* `mash_db = '{dbname}/mash_db',`
+* `mash_db = '{dbname}/mash_db'`
 
-* `bowtie_db = '{dbname}/bowtie_db',`
+* `bowtie_db = '{dbname}/bowtie_db'`
 
-* `placer_db = '{dbname}/placer_db',`
+* `placer_db = '{dbname}/placer_db'`
 
-* `taxonomy_db = '{dbname}/taxonomy',`
+* `taxonomy_db = '{dbname}/taxonomy'`
 
 `# parameters for hierarchical clustering levels`
 
-* `barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005],`
+* `barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005]`
 
-* `barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a'],`
+* `barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a']`
 
-* `representative_level = 2,`
+* `representative_level = 2`
 
 #### These parameters are for experts, and have not been tested for varied values
 
