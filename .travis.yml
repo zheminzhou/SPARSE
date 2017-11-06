@@ -11,7 +11,6 @@ addons:
         - gfortran
         - libncurses5-dev
         - cmake
-        - xvbf
         - samtools
         - bowtie2
 install: "pip install -r requirements.txt"
