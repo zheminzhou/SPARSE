@@ -9,7 +9,7 @@ addons:
         packages:
         - python-pip
         - gfortran
-	- llvm
+        - llvm
         - libncurses5-dev
         - cmake
         - xvbf
