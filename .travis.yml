@@ -4,6 +4,17 @@ os:
 python:
   - "2.7"
 # command to install dependencies
+addons: 
+    apt:
+        packages:
+        - python-pip
+        - gfortran
+	- llvm
+        - libncurses5-dev
+        - cmake
+        - xvbf
+        - samtools
+        - bowtie2
 install: "pip install -r requirements.txt"
 # command to run tests
 script: pytest
