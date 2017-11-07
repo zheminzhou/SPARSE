@@ -4,7 +4,7 @@ installation_param = dict(
     BIN = '',
     
     
-    mash = 'bin/mash',
+    mash = '{SPARSE}/bin/mash',
     bowtie2 = '{BIN}bowtie2',
     bowtie2_build = '{BIN}bowtie2-build',
     samtools = '{BIN}samtools',

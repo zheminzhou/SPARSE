@@ -588,7 +588,7 @@ def match_group(data, match_ref, **params) :
             else :
                 taxonomy.append(cnts[0][0])
         if label.startswith('p') :
-            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == label[1:], ['organism_name', 'assembly_accession']].as_matrix().tolist()[0]) )
+            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == content[1][0], ['organism_name', 'assembly_accession']].as_matrix().tolist()[0]) )
         elif label.startswith('s') :
             taxonomy = taxonomy[:-1]
         elif label.startswith('u') :
