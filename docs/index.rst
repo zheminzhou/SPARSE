@@ -10,9 +10,15 @@ SPARSE indexes >100,000 reference genomes in public databases in to hierarchical
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-
+   :caption: Tutorials:
+   
    installation
+   toyexample
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference:
+   
    map
    mash
    parameter
