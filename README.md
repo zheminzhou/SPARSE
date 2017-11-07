@@ -35,8 +35,6 @@ See [requirements.txt](requirements.txt) for python module dependancies.
     git clone git clone https://github.com/zheminzhou/SPARSE
     cd SPARSE/EM && make
     pip install -r requirements.txt 
-    wget https://github.com/marbl/Mash/releases/download/v2.0/mash-Linux64-v2.0.tar
-    tar -xvf mash-Linux64-v2.0.tar
 
 Change the [parameters](parameter.md) if needed. 
 

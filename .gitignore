@@ -1,6 +1,7 @@
 # USER DEFINED
 refseq/
-
+*.fna
+testdb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
