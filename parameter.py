@@ -1,10 +1,10 @@
 import os
 
 installation_param = dict(
-    BIN = '/usr/local/bin/',
+    BIN = '',
     
     
-    mash = '{BIN}mash',
+    mash = 'bin/mash',
     bowtie2 = '{BIN}bowtie2',
     bowtie2_build = '{BIN}bowtie2-build',
     samtools = '{BIN}samtools',
