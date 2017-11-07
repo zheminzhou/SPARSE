@@ -2,9 +2,11 @@
 Map metagenomic reads onto representative databases
 ===================================================
 
+Template of how to map metagenomic reads onto a representative database.
+
 .. code-block:: bash
 
-    python 11_query_reads.py dbname=</path/to/SPARSE/database> MapDB=<comma delimited MapDB's> r1=<read_1> r2=<read_2> workspace=<workspace_name>
+    python 11_query_reads.py dbname=/path/to/SPARSE/database MapDB=comma delimited MapDB's r1=read_1 r2=read_2 workspace=workspace_name
 
 Example (single end):
 
