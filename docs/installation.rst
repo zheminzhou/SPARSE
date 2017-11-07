@@ -23,7 +23,7 @@ SPARSE runs on Unix and requires Python >= version 2.7
 See requirements.txt for python module dependancies. 
 
 Installation instructions (Ubuntu)
----------------------------------
+----------------------------------
 
 .. code-block:: bash
      
