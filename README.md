@@ -43,3 +43,7 @@ To update SPARSE, move to installation directory and pull the latest version:
     cd SPARSE
     git pull
 
+# Citation
+SPARSE has not been formally published yet. If you use SPARSE please cite the GitHub directly: https://github.com/zheminzhou/SPARSE
+
+An extended citation could be: Z Zhou, N Luhmann, NF Alikhan, C Quince, M Achtman (2017) "SPARSE: Accurate Reconstruction of Microbial Strains Using Representative Reference Genomes", Available: https://github.com/zheminzhou/SPARSE
