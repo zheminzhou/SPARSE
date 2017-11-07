@@ -17,4 +17,5 @@ echo ':::: Obtain a SPARSE-style report'
 cat Ragna_toy/profile.txt
 
 echo ':::: Retrieve all reads that are specific to the reference'
-python 21_get_specific_reads.py workspace=Ragna_toy ref_id=6
+python 21_get_specific_reads.py workspace=Ragna_toy ref_id=10
+
