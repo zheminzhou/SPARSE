@@ -5,13 +5,13 @@ You can also custom the representative databases. Here a human genome is used as
 
 **We first query its record in a SPARSE refseq database using the assembly accession :**
 
-.. code-block::
+.. code-block:: bash
 
     python 10_query_metadata.py dbname=refseq_20171014 assembly_accession=GCF_000001405.37 > human.tsv
 
 **The resulted file is like:**
 
-.. code-block::
+.. code-block:: bash
 
     index	deleted barcode sha256	size	assembly_accession	version refseq_category assembly_level	taxid	organism_name	file_path	url_path	subspecies	species genus	family	order	class	phylum	kingdom superkingdom
 
@@ -19,7 +19,7 @@ You can also custom the representative databases. Here a human genome is used as
 
 **This file can be used as an input to build a new representative database named "Human" :**
 
-.. code-block::
+.. code-block:: bash
 
     python 03_db_MapDB.py dbname=refseq MapDB=Human seqlist=human.tsv
 

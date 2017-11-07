@@ -14,8 +14,8 @@ Example (single end):
 
 The outputs consist of two files, with detailed information in the ["output" section](output.md).
 
-Extract reference specific reads:
----------------------------------
+Extract reference specific reads
+--------------------------------
 
 You first need to find out the indices of the interesting references in the [output files](output.md), and use the indexes to extract related reads. 
 
@@ -23,7 +23,7 @@ You first need to find out the indices of the interesting references in the [out
 
     python 21_get_specific_reads.py dbname=refseq workspace=read1 ref_id=<comma delimited indices>
 
-For example, we extract all reads specific to reference id 16 [here](output.md), which is a Vibrio cholerae genome. 
+For example, we extract all reads specific to reference id 16, which is a Vibrio cholerae genome. 
 
 .. code-block:: bash
 

@@ -50,7 +50,7 @@ Parameters to construct SPARSE databases, only for advanced uses:
 * `placer_db = '{dbname}/placer_db'`
 * `taxonomy_db = '{dbname}/taxonomy'`
 
-`# parameters for hierarchical clustering levels`
+Parameters for hierarchical clustering levels:
 
 * `barcode_dist =    [0.1,   0.05,0.02,0.01,   0.005,0.002,0.001,   0.0005]`
 * `barcode_tag =     ['u',   's' ,'r' ,'p' ,   'n'  ,'m'  ,'e'  ,   'c'    ,'a']`
