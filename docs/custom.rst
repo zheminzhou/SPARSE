@@ -1,3 +1,6 @@
+========================================
+Building custom representative databases
+========================================
 You can also custom the representative databases. Here a human genome is used as an example:
 
 * We first query its record in a SPARSE refseq database using the assembly accession :

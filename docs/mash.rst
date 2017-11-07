@@ -1,4 +1,6 @@
-### MASH based taxonomic assignment for genomic assemblies or read sets
+===================================================================
+MASH based taxonomic assignment for genomic assemblies or read sets
+===================================================================
 SPARSE allows ultra-efficient taxonomic assignment with genomic assemblies or read sets, by using MASH to approximate average nucleotide identities (ANI). 
 
 * genomic assembly (fasta format):

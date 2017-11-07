@@ -1,3 +1,6 @@
+===============
+RefSeq database
+===============
 The refseq database from NCBI stores >100,000 complete genomes and drafts that compass all tree of life. 
 ### Empty framework
 We firstly construct an empty database folder and assigns default control parameters for the database

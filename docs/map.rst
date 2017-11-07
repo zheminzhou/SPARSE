@@ -1,4 +1,6 @@
-### Map metagenomic reads onto representative databases:
+===================================================
+Map metagenomic reads onto representative databases
+===================================================
 `python 11_query_reads.py dbname=</path/to/SPARSE/database> MapDB=<comma delimited MapDB's> r1=<read_1> r2=<read_2> workspace=<workspace_name>`
 
 * Example (single end):

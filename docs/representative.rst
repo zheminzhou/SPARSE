@@ -1,3 +1,7 @@
+========================
+Representatives database
+========================
+
 In order to do read-level taxonomic binning, representative databases need to be compiled. Four default databases were designed cover most of the genetic diversities in metagenomic samples. 
 ### ANI 98% database for bacteria and archaea
 `python 03_db_MapDB.py dbname=refseq update=representative | python 03_db_MapDB.py dbname=refseq update=representative seqlist=stdin`

@@ -10,6 +10,13 @@ Welcome to SPARSE's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   map
+   mash
+   parameter
+   refseq
+   representative
+   custom
 
 
 Indices and tables
