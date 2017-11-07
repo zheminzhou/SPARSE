@@ -57,8 +57,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SPARSE'
-copyright = u'2017, Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Mark Achtman'
-author = u'Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Mark Achtman'
+copyright = u'2017, Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman'
+author = u'Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
