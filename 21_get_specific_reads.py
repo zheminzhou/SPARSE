@@ -34,3 +34,4 @@ if __name__ == '__main__' :
                         write = 0
                 if write :
                     fout.write(line)
+    print 'Reference specific reads are saved in {0}'.format(output)

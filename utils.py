@@ -24,7 +24,7 @@ try :
     def run_mash(data, is_read=False) :
         msh_file, ref_msh, n_thread, params = data
 
-        minihash = capnp.load('minihash.capnp')
+        minihash = capnp.load( os.path.join(os.path.dirname(os.path.realpath(__file__)), 'minihash.capnp') )
         msh = minihash.MinHash.read(open(msh_file,'r')).to_dict()
         size = msh['referenceList']['references'][0]['length64']
 
@@ -90,6 +90,8 @@ def load_params(argv) :
     assert os.path.join(c2['dbname'], 'dbsetting.cfg'), 'Not configured. Run db_create.py to build the framework for a database.'
     
     config = json.load(open(os.path.join(c2['dbname'], 'dbsetting.cfg')))
+    if config['BIN'] != '' and not config['BIN'].endswith('/') :
+        config['BIN'] = config['BIN'].strip() + '/'
     for k in c2 :
         if k in config :
             if isinstance(config[k], int) :

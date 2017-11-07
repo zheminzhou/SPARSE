@@ -84,7 +84,8 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, HGT_prior=[[0.05, 0.99
     barcodes[tax_ids] = b2[tax_ids]
     
     # # PER match conservation weighting
-    conservation = np.ones(shape=np.max(maps.T[0]).astype(int)+1, dtype=float)
+    rcnt = np.max(maps.T[0]).astype(int)+1
+    conservation = np.ones(shape=rcnt, dtype=float)
     for id, (prior, c_p, a_p) in enumerate(HGT_prior) :
         taxa_cnt = barcodes[np.unique(barcodes.T[id+3], return_index=True)[1], id]
         taxa_cnt = np.bincount(*np.unique(taxa_cnt[taxa_cnt >= 0], return_counts=True))
@@ -100,10 +101,10 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, HGT_prior=[[0.05, 0.99
         
         maps[c[1], 8] = taxa_cnt[barcodes[maps[c[1], 1].astype(int), id]]
         maps[c[1], 9] = c[2]
-        r_weight = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 10] )
+        r_weight = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 10], minlength= rcnt)
         r_weight[r_weight == 0] = 1
-        r_present = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 9]*maps[c[1], 10] )/r_weight
-        r_total = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 8]*maps[c[1], 10] )/r_weight
+        r_present = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 9]*maps[c[1], 10], minlength= rcnt)/r_weight
+        r_total = np.bincount( maps[c[1], 0].astype(int), weights=maps[c[1], 8]*maps[c[1], 10], minlength= rcnt )/r_weight
         #p = (r_total > 0)
         lk1 = np.log(prior) + r_present*np.log(c_p) + (r_total-r_present)*np.log(1-c_p)
         lk1[lk1<-700] = -700
@@ -544,6 +545,7 @@ def assign_reads(data, qvector, workspace, **params) :
                     else :
                         fout.write('{0}\t{1}\n'.format(rid, line.strip().split()[0][1:]))
         fin.close()
+    print 'Read-level assignments  are in {0}'.format(os.path.join(workspace, 'read_assignment.gz'))
 
 def match_group(data, match_ref, **params) :
     pgroup = np.vstack([ data['index'], data['barcode'].apply(lambda b:b.split('.')[3] ) ]).T
@@ -626,7 +628,7 @@ def profiling(data, assign, minFreq, **params) :
         for g, (w, r, t) in sorted(groups.iteritems(), key=lambda x:(x[1][0], x[0]), reverse=True) :
             if w/basic_aln[0] >= minFreq :
                 fout.write('{0}\t{1:.4f}\t{2:.4f}\t{3} ({4})\n'.format(g, w*100.0/basic_aln[0], w*100.0/basic_aln[1], '|'.join(t), ','.join(r) ))
-
+    print 'Profilling results are in {0}'.format(os.path.join(params['workspace'], 'profile.txt'))
 if __name__ == '__main__' :
     params = utils.load_params(sys.argv)
     params['bootstrap'] = int(params['bootstrap']) if 'bootstrap' in params else 0
