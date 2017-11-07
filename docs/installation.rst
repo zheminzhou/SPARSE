@@ -4,7 +4,7 @@ Installation guide
 
 SPARSE runs on Unix and requires Python >= version 2.7
 
-*System modules (Ubuntu 16.04)*:
+**System modules (Ubuntu 16.04):**
 
 * pip
 * gfortran
@@ -13,7 +13,7 @@ SPARSE runs on Unix and requires Python >= version 2.7
 * cmake
 * xvfb-run (for malt, optional)
 
-*3rd-party software*:
+**3rd-party software:**
 
 * samtools (>=1.2)
 * mash (>=1.1.1)
@@ -40,5 +40,8 @@ Updating SPARSE
 ---------------
 
 To update SPARSE, move to installation directory and pull the latest version:  
-`cd SPARSE`  
-`git pull` 
+
+.. code-block:: bash
+
+    cd SPARSE
+    git pull
