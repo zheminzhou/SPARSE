@@ -7,6 +7,7 @@ python:
 addons: 
     apt:
         packages:
+        - llvm
         - python-pip
         - gfortran
         - libncurses5-dev
