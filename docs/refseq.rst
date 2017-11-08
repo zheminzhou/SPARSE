@@ -42,6 +42,8 @@ NOTE: Please keep its folder structure. Then run
 
     cd refseq_20171014 && sh untar.bash
 
+Done.
+
 
 Custom databases
 ----------------
