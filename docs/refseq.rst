@@ -23,8 +23,3 @@ Be aware that the newly added genomes are not ready for metagenomic reads. You n
 
 We also release a pre-compiled database named "refseq_20171014", on the basis of NCBI RefSeq at 2017.10.14, at http://enterobase.warwick.ac.uk/sparse/
 
-----------------
-Custom databases
-----------------
-
-You can also create a custom database, or add in custom genomes to an old database.
