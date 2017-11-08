@@ -92,6 +92,8 @@ def load_params(argv) :
     config = json.load(open(os.path.join(c2['dbname'], 'dbsetting.cfg')))
     if config['BIN'] != '' and not config['BIN'].endswith('/') :
         config['BIN'] = config['BIN'].strip() + '/'
+    if config['SPARSE'] == '' :
+        config['SPARSE'] = os.path.realpath(__file__).replace('\\', '/').rsplit('/', 1)[0]
     for k in c2 :
         if k in config :
             if isinstance(config[k], int) :
