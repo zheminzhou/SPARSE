@@ -22,6 +22,7 @@ We also release a pre-compiled database named "refseq_20171014", on the basis of
 http://enterobase.warwick.ac.uk/sparse/
 
 This database contains the MASH indexed master database and four default mapping databases:
+
 .. code-block:: bash
 
     representative
