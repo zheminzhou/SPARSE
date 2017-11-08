@@ -25,13 +25,13 @@ To use the database, just download everything in the folder
 
 .. code-block:: bash
 
-refseq_20171014
+    refseq_20171014
 
 and run 
 
 .. code-block:: bash
 
-cd refseq_20171014 && sh untar.bash
+    cd refseq_20171014 && sh untar.bash
 
 
 Custom databases
