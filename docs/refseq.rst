@@ -30,9 +30,6 @@ This database contains the MASH indexed master database and four default mapping
 
 To use the database, just download everything in the folder, **refseq_20171014**
 
-NOTE: Please keep its folder structure. Then run
-
-cd refseq_20171014  sh untar.bash
 
 ----------------
 Custom databases
