@@ -27,7 +27,7 @@ To use the database, just download everything in the folder
 
     refseq_20171014
 
-and run 
+NOTE: Please keep its folder structure. Then run 
 
 .. code-block:: bash
 
