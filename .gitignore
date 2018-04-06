@@ -1,5 +1,8 @@
 # USER DEFINED
 refseq/
+EM/solve-model
+EM/*.o
+
 *.fna
 testdb/
 docs/_build/
