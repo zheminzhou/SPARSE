@@ -108,6 +108,30 @@ def load_params(argv) :
             config[k] = config[k].format(**config)
     return config
 
+def load_paramDict(c2) :
+    assert 'dbname' in c2, 'need "dbname".'
+    assert os.path.join(c2['dbname'], 'dbsetting.cfg'), 'Not configured. Run db_create.py to build the framework for a database.'
+    
+    config = json.load(open(os.path.join(c2['dbname'], 'dbsetting.cfg')))
+    if config['BIN'] != '' and not config['BIN'].endswith('/') :
+        config['BIN'] = config['BIN'].strip() + '/'
+    if config['SPARSE'] == '' :
+        config['SPARSE'] = os.path.realpath(__file__).replace('\\', '/').rsplit('/', 1)[0]
+    for k in c2 :
+        if k in config :
+            if isinstance(config[k], int) :
+                c2[k] = int(c2[k])
+            elif isinstance(config[k], float) :
+                c2[k] = float(c2[k])
+            elif isinstance(config[k], list) or isinstance(config[k], dict) :
+                c2[k] = json.loads(c2[k])
+    config.update(c2)
+    for k in config :
+        if isinstance(config[k], basestring) and '{' in config[k] :
+            config[k] = config[k].format(**config)
+    return config
+
+
 @contextlib.contextmanager
 def get_genome_file(parse, data, folder='.') :
     outputs = []

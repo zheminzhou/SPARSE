@@ -28,6 +28,7 @@ def db_create(param) :
             os.makedirs(folder)
     
     json.dump(param, open(os.path.join(param['dbname'], 'dbsetting.cfg'), 'w'), indent=2, sort_keys=True)
+    print 'done'
 
 if __name__ =='__main__' :
     db_create(dict([[ k.strip() for k in arg.split('=', 1)] for arg in argv]))
