@@ -630,14 +630,13 @@ def profiling(data, assign, minFreq, **params) :
                 fout.write('{0}\t{1:.4f}\t{2:.4f}\t{3} ({4})\n'.format(g, w*100.0/basic_aln[0], w*100.0/basic_aln[1], '|'.join(t), ','.join(r) ))
     print 'Profilling results are in {0}'.format(os.path.join(params['workspace'], 'profile.txt'))
     
-    
+o_t = time.time()
 def query_read(params) :
     params = utils.load_paramDict(params)
     params['bootstrap'] = int(params['bootstrap']) if 'bootstrap' in params else 0
         
     data = utils.load_database(**params)
     
-    o_t = time.time()
     if params.get('stage', '0') in '0' :
         bowtie2matrix(**params)
     if params.get('stage', '0') in '01' :

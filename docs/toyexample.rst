@@ -8,10 +8,10 @@ The contents of the shell script download and create a Bowtie database of some *
 
 .. code-block:: bash
 
-    python ../01_db_create.py dbname=toyset
-    python ../02_db_index.py dbname=toyset seqlist=Salmonella_toyset.txt
-    python ../10_query_metadata.py dbname=toyset tag=m==a | python ../03_db_MapDB.py dbname=toyset MapDB=Salmonella seqlist=stdin
-    python ../11_query_reads.py dbname=toyset r1=Ragna.sample.fq.gz workspace=Ragna_toy MapDB=Salmonella
-    python ../31_traditional_report.py Ragna_toy
+    python ../SPARSE.py create --dbname toyset
+    python ../SPARSE.py index --dbname toyset --seqlist Salmonella_toyset.txt
+    python ../SPARSE.py query --dbname toyset --tag m==a | python ../SPARSE.py MapDB --dbname toyset --MapDB Salmonella --seqlist stdin
+    python ../SPARSE.py predict --dbname toyset --r1 Ragna.sample.fq.gz --workspace Ragna_toy --MapDB Salmonella
+    python ../SPARSE.py report Ragna_toy
     cat Ragna_toy/profile.txt
-    python ../21_get_specific_reads.py workspace=Ragna_toy ref_id=10
+    python ../SPARSE.py SSR --workspace Ragna_toy --ref_id 10

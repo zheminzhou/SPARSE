@@ -92,7 +92,7 @@ def _SSR(argv) :
     from modules.C2_get_specific_reads import get_SSR
     parser = argparse.ArgumentParser(description='''Extract species specific reads associated with particular references.''', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-w', '--workspace', help='Folder name for all outputs and intermediate results.', required=True)
-    parser.add_argument('-r', '--ref_id', help='Comma delimited reference indexes to extract.', required=True)
+    parser.add_argument('-i', '--ref_id', help='Comma delimited reference indexes to extract.', required=True)
     parser.add_argument('-r', '--ratio', help='The minimum confidential ratio to report.', default=0.5, type=float)
     args = parser.parse_args(argv)
     return get_SSR(args.__dict__)
