@@ -20,7 +20,7 @@ SPARSE runs on Unix and requires Python >= version 2.7
 * bowtie2 (>=2.3.2)
 * malt (>=0.4.0) (optional)
 
-See requirements.txt for python module dependancies. 
+See requirements.txt for python module dependencies. 
 
 Installation instructions (Ubuntu)
 ----------------------------------
@@ -39,7 +39,7 @@ Change the parameters if needed.
 Updating SPARSE
 ---------------
 
-To update SPARSE, move to installation directory and pull the latest version:  
+To update SPARSE, move to the installation directory and pull the latest version:  
 
 .. code-block:: bash
 
