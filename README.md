@@ -27,7 +27,7 @@ SPARSE runs on Unix and requires Python >= version 2.7
 * bowtie2 (>=2.3.2)
 * malt (>=0.4.0) (optional)
 
-See [requirements.txt](requirements.txt) for python module dependancies. 
+See [requirements.txt](requirements.txt) for python module dependencies. 
 
 ### Installation (Ubuntu) 
      
