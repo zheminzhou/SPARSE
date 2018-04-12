@@ -6,7 +6,7 @@
 Welcome to SPARSE's documentation!
 ==================================
 
-SPARSE indexes >100,000 reference genomes in public databases in to hierarchical clusters and uses it to predict origins of metagenomic reads.
+SPARSE indexes >100,000 reference genomes in public databases into hierarchical clusters and uses it to predict origins of metagenomic reads.
 
 .. toctree::
    :maxdepth: 2
