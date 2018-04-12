@@ -2,7 +2,6 @@
 
 SPARSE indexes >100,000 reference genomes in public databases in to hierarchical clusters and uses it to predict origins of metagenomic reads. 
 
-See http://sparse.readthedocs.io/en/latest/ for full documentation.
 
 [![Build Status](https://travis-ci.org/zheminzhou/SPARSE.svg?branch=master)](https://travis-ci.org/zheminzhou/SPARSE)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -36,12 +35,51 @@ See [requirements.txt](requirements.txt) for python module dependencies.
     git clone https://github.com/zheminzhou/SPARSE
     cd SPARSE/EM && make
     pip install -r requirements.txt 
+    
 
-## Updating SPARSE
+### Updating SPARSE
 To update SPARSE, move to installation directory and pull the latest version:  
 
     cd SPARSE
     git pull
+    
+    
+## Quick Start
+See http://sparse.readthedocs.io/en/latest/ for full documentation.
+
+1. **Download reference database**
+
+We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to download at http://enterobase.warwick.ac.uk/sparse/
+   Please download the complete folder refseq_20171014/ and do not change its internal folder structure. The database can be unpacked by running:
+   ```
+   cd refseq_20171014 && sh untar.bash
+   ```
+   This pre-compiled database contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
+   
+   To update the database or build a costum database, please refer to the full documentation.
+   
+2. **Predict read origins**
+
+This following command will map and evaluate all reads in both fastq-files against the specified mapping databases. 
+```
+python SPARSE.py predict --dbname refseq_20171014 --MapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
+```
+For single-end reads, only --r1 needs to be specified. All output files are stored in the respective workspace.
+
+3. **Create a report**
+```
+python SPARSE.py report <workspace_name>
+```
+The report will be stored in <workspace_name>/profile.txt
+
+4. **Extract reference specific reads**
+
+The following command extracts all reads specific to the provided reference ids, which can be found in the output of step 2.
+```
+python SPARSE.py SSR --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
+```
+
+
 
 ## Citation
 SPARSE has not been formally published yet. If you use SPARSE please cite the preprint https://www.biorxiv.org/content/early/2017/11/07/215707
