@@ -29,7 +29,7 @@ Installation instructions (Ubuntu)
      
     sudo apt-get update
     sudo apt-get install gfortran llvm libncurses5-dev cmake python-pip samtools bowtie2
-    git clone git clone https://github.com/zheminzhou/SPARSE
+    git clone https://github.com/zheminzhou/SPARSE
     cd SPARSE/EM && make
     pip install -r requirements.txt 
 
