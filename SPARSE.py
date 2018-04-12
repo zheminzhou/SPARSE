@@ -134,7 +134,8 @@ Commands:
 Use SPARSE.py <command> -h to get help for each command.
 '''
         import traceback
-        traceback.print_exception(*sys.exc_info())
+        if not isinstance(e, IndexError) :
+            traceback.print_exception(*sys.exc_info())
         
         sys.exit(0)
 
