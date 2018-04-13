@@ -1,0 +1,4 @@
+include bin/*
+include LICENSE
+include README*
+include EM/solve-model
