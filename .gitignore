@@ -1,4 +1,6 @@
 # USER DEFINED
+dist
+*.egg-info
 refseq/
 EM/solve-model
 EM/*.o

@@ -4,8 +4,7 @@
 
 from setuptools import setup, find_packages
 from codecs import open
-from os import path, walk
-
+from os import path, walk, chdir, system
 
 here = path.abspath(path.dirname(__file__))
 
@@ -13,7 +12,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='sparse',  
+    name='meta-sparse',  
     version= '0.1.0',  
     description='SPARSE indexes reference genomes in public databases into hierarchical clusters and uses it to predict origins of metagenomic reads.',
     long_description=long_description, 
@@ -31,14 +30,24 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    py_modules=['SPARSE', 'parameter'],
+#    py_modules=['SPARSE', 'parameter'],
     entry_points={
         'console_scripts': [
-            'sparse=SPARSE:SPARSE',
+            'sparse = SPARSE.SPARSE:SPARSE',
         ],
     },
-    keywords='bioinformatics microbial metagenomics', 
-    packages = ['modules'], 
+    keywords=['bioinformatics', 'microbial', 'metagenomics'], 
+    package_data={'SPARSE':[
+        'EM/*',
+        'bin/*',
+        'docs/*',
+        'modules/*',
+        'EM/Ipopt/include/*',
+        'EM/Ipopt/lib64/*',
+        'EM/Ipopt/*',
+    ]},
+    packages = ['SPARSE'], 
+    package_dir = {'SPARSE':'.'},
     install_requires=['pycapnp', 'numpy', 'pandas', 'Cython'],
     include_package_data=True,
     project_urls={ 

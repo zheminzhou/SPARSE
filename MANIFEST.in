@@ -1,4 +1,6 @@
 include bin/*
+include modules/*
 include LICENSE
 include README*
-include EM/solve-model
+recursive-include EM *
+include docs/*
