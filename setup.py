@@ -48,7 +48,7 @@ setup(
     ]},
     packages = ['SPARSE'], 
     package_dir = {'SPARSE':'.'},
-    install_requires=['pycapnp', 'numpy', 'pandas', 'Cython'],
+    install_requires=['pycapnp', 'numpy', 'pandas', 'Cython', 'scipy', 'msgpack'],
     include_package_data=True,
     project_urls={ 
         'Bug Reports': 'https://github.com/zheminzhou/SPARSE/issues',
