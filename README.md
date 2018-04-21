@@ -76,7 +76,7 @@ The report will be stored in <workspace_name>/profile.txt
 
 The following command extracts all reads specific to the provided reference ids, which can be found in the output of step 2.
 ```
-python SPARSE.py SSR --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
+python SPARSE.py extract --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
 ```
 
 
