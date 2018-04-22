@@ -35,9 +35,11 @@ SPARSE indexes >100,000 reference genomes in public databases into hierarchical 
 Citation
 --------
 
-SPARSE has not been formally published yet. If you use SPARSE please cite the preprint https://www.biorxiv.org/content/early/2017/11/07/215707
+SPARSE has been pulished as a conference paper in RECOMB 2018.
+Zhou Z., Luhmann N., Alikhan NF., Quince C., Achtman M. (2018) Accurate Reconstruction of Microbial Strains from Metagenomic Sequencing Using Representative Reference Genomes. In: Raphael B. (eds) Research in Computational Molecular Biology. RECOMB 2018. Lecture Notes in Computer Science, vol 10812. Springer, Cham. DOI: https://doi.org/10.1007/978-3-319-89929-9_15
 
-Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman, 'Accurate Reconstruction of Microbial Strains Using Representative Reference Genomes' bioRxiv 215707; doi: https://doi.org/10.1101/215707
+A preprint can also be found in BioRxiv : https://www.biorxiv.org/content/early/2017/11/07/215707
+
 
 Indices and tables
 ==================
