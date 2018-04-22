@@ -22,7 +22,15 @@ SPARSE runs on Unix and requires Python >= version 2.7
 
 See requirements.txt for python module dependencies. 
 
-Installation instructions (Ubuntu)
+Installation via PIP
+--------------------
+
+.. code-block:: bash
+
+    pip install meta-sparse
+
+
+Install from source files (Ubuntu)
 ----------------------------------
 
 .. code-block:: bash
