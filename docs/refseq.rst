@@ -7,7 +7,7 @@ We firstly construct an empty database folder and assigns default control parame
 
 .. code-block:: bash
 
-    python SPARSE.py create --dbname refseq
+    python SPARSE.py init --dbname refseq
 
 Index refseq database or update an exising database
 ---------------------------------------------------
