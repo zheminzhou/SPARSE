@@ -1,7 +1,7 @@
 ==================
 Parameter settings
 ==================
-All the default parameters are stored in parameter.py. Some parameters here need to be specified during installation, while others can be specified for each database or for each SPARSE run
+All the default parameters are stored in parameter.py. Users do not need to specifiy these parameters in most of cases. Some parameters here may need to be specified during installation, while others can be specified for each database or for each SPARSE run. 
 
 Installation parameters
 -----------------------
