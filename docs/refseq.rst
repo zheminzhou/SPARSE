@@ -11,7 +11,7 @@ We firstly construct an empty database folder and assigns default control parame
 
 Index refseq database or update an exising database
 ---------------------------------------------------
-A second command allows SPARSE to download all genomes in refseq on-fly and construct the database. The efficiency of index process depends on both the downloading speed and the number of assigned CPUs. When assigning 20 CPUs, you can expect the whole process finishes in about one day. 
+A second command allows SPARSE to download all genomes in refseq on-fly and construct the database. The efficiency of the indexing process depends on both the downloading speed and the number of assigned CPUs. When assigning 20 CPUs, you can expect the whole process to finish in about one day. 
 
 .. code-block:: bash
 
