@@ -28,7 +28,11 @@ SPARSE runs on Unix and requires Python >= version 2.7
 
 See [requirements.txt](requirements.txt) for python module dependencies. 
 
-### Installation (Ubuntu) 
+### Installation via PIP
+
+    pip install meta-sparse
+
+### Installation from source codes (Ubuntu) 
      
     sudo apt-get update
     sudo apt-get install gfortran llvm libncurses5-dev cmake python-pip samtools bowtie2
@@ -62,7 +66,7 @@ We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to downloa
 
 This following command will map and evaluate all reads in both fastq-files against the specified mapping databases. 
 ```
-python SPARSE.py predict --dbname refseq_20171014 --MapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
+python SPARSE.py predict --dbname refseq_20171014 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
 ```
 For single-end reads, only --r1 needs to be specified. All output files are stored in the respective workspace.
 
@@ -76,7 +80,7 @@ The report will be stored in <workspace_name>/profile.txt
 
 The following command extracts all reads specific to the provided reference ids, which can be found in the output of step 2.
 ```
-python SPARSE.py SSR --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
+python SPARSE.py extract --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
 ```
 
 
