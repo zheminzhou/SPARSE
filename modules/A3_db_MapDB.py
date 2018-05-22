@@ -25,8 +25,8 @@ def create_db(data) :
                 os.unlink(fname)
         except :
             pass
-    if dbtype == 'bowtie2' :
-        r = subprocess.Popen('{0} -o 3 {1} {1}'.format(build, dbname).split(), stdout=subprocess.PIPE)
+    if dbtype == 'minimap2' :
+        r = subprocess.Popen('{0} -k13 -w5 -d {1}.mmi {1}'.format(build, dbname).split(), stdout=subprocess.PIPE)
     elif dbtype == 'malt' :
         r = subprocess.Popen('{0} -i {1} -s DNA -d {1}.malt -t 20'.format(build, dbname).split(), stdout=subprocess.PIPE)
     r.communicate()
@@ -42,7 +42,7 @@ def create_db(data) :
     
 def db_MapDB(params) : 
     params = utils.load_paramDict(params)
-    params['dbtype'] = params.get('dbtype', 'bowtie2')
+    params['dbtype'] = params.get('dbtype', 'minimap2')
     db_columns = [c for c in params['db_columns'] + params['metadata_columns'] + params['taxa_columns'] if c not in ('sha256')]
 
     assert params.get('seqlist', None) is not None, 'seqlist is required. '
@@ -94,9 +94,10 @@ def db_MapDB(params) :
                 break
         if done == 0 :
             buckets.append([size, [[index, size, file_path, url_path]]])
-    if params['dbtype'] == 'bowtie2' :
+    if params['dbtype'] == 'minimap2' :
         pool = Pool(min(params['n_thread'], len(buckets)))
-        result = pool.imap_unordered(create_db, [[params['bowtie2_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
+        result = pool.imap_unordered(create_db, [[params['minimap2'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
+        #result = map(create_db, [[params['minimap2'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
     else :
         result = map(create_db, [[params['malt_build'], mapdb, start_id + id, bucket[1], params['dbtype']] for id, bucket in enumerate(buckets)])
     for r in result :

@@ -7,6 +7,7 @@ installation_param = dict(
     mash = '{SPARSE}/bin/mash',
     bowtie2 = '{SPARSE}/bin/bowtie2',
     bowtie2_build = '{SPARSE}/bin/bowtie2-build',
+    minimap2 = '{SPARSE}/bin/minimap2',
     samtools = '{BIN}samtools',
     malt_run = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-run',
     malt_build = 'xvfb-run --auto-servernum --server-num=1 {BIN}malt-build',

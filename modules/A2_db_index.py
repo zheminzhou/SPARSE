@@ -121,6 +121,15 @@ def load_data(exist_db, new_data, **params) :
     entries['assembly_level'] = pd.Categorical(entries['assembly_level'], ['Complete Genome', 'Chromosome', 'Draft']).fillna('Draft')
     entries.version = pd.to_numeric(entries.version, errors='coerce').fillna(1).astype(np.int64)
     
+    update_rec = { r[0].rsplit('.', 1)[0]:r for r in entries[['assembly_accession', 'version', 'file_path', 'url_path']].as_matrix() }
+    for row_id, r in existing.iterrows() :
+        acc = r['assembly_accession'].rsplit('.', 1)[0]
+        if acc in update_rec :
+            ur = update_rec[acc]
+            for id, tag in enumerate(['assembly_accession', 'version', 'file_path', 'url_path']) :
+                if str(ur[id]) != r[tag] and ur[id] != '-':
+                    r[tag] = str(ur[id])
+    existing.to_msgpack(exist_db)
     cur_rec = {rr:id \
                for id, r in enumerate(existing[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
                for rr in r if rr != '-'}
