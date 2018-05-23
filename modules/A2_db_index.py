@@ -47,10 +47,10 @@ def save2mash(inputs, codes, **params) :
                 to_merge[msh_db].append(fmsh)
     for db, infiles in to_merge.iteritems() :
         if os.path.exists(db) :
-            subprocess.Popen('mash paste {0} {1} {2}'.format(db[:-4] + '.2', db, ' '.join(infiles)).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+            subprocess.Popen('{mash} paste {0} {1} {2}'.format(db[:-4] + '.2', db, ' '.join(infiles), **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
             shutil.move(db[:-4] + '.2.msh', db)
         else :
-            subprocess.Popen('mash paste {0} {1}'.format(db[:-4], ' '.join(infiles)).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+            subprocess.Popen('{mash} paste {0} {1}'.format(db[:-4], ' '.join(infiles), **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
     return outputs
 
 def genotype_and_saving(inputs, pool, **params) :
