@@ -9,7 +9,7 @@ SPARSE indexes >100,000 reference genomes in public databases in to hierarchical
 
 ## Installation 
 
-SPARSE runs on Unix and requires Python >= version 2.7
+SPARSE runs on Unix and requires Python version 2.7 (Python 3.x supports are under development)
 
 **System modules (Ubuntu 16.04) :**
 
