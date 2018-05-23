@@ -83,7 +83,7 @@ def db_MapDB(params) :
     
     buckets = [[0, []] for n in xrange(min_file_num)]
     id = -1
-    for index, size, file_path, url_path in data[['index', 'size', 'file_path', 'url_path']].as_matrix() :
+    for index, size, file_path, url_path in data[['index', 'size', 'file_path', 'url_path']].values :
         size, done = int(size), 0
         for id in range(id+1, len(buckets)) + range(id+1) :
             b = buckets[id]

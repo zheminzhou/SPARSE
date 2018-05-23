@@ -79,7 +79,7 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, HGT_prior=[[0.05, 0.99
     b2 =       np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
     barcodes = np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
     barcodes.fill(-1)
-    b2[database['index'].as_matrix().astype(int)] = database['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist()
+    b2[database['index'].values.astype(int)] = database['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist()
     tax_ids = np.unique(maps.T[1]).astype(int)
     barcodes[tax_ids] = b2[tax_ids]
     
@@ -501,7 +501,7 @@ def assign_reads(data, qvector, workspace, **params) :
     maps.T[4] = 100.0*maps.T[4]/(maps.T[4] + maps.T[5])
     maps.T[5] = 100.0*(aln_mut/aln_len)[maps.T[1].astype(int)+1]
     
-    cls_map = np.bincount( data['index'].astype(int)+1, data['barcode'].apply(lambda barcode:int(barcode.split('.')[0][1:])).as_matrix() ).astype(int)
+    cls_map = np.bincount( data['index'].astype(int)+1, data['barcode'].apply(lambda barcode:int(barcode.split('.')[0][1:])).values ).astype(int)
     cls_cnt = maps[:, [1,10,9]]
     cls_cnt = cls_cnt[cls_cnt.T[2]>0.001]
     cls_cnt.T[0] = cls_map[cls_cnt.T[0].astype(int)+1]
@@ -554,7 +554,7 @@ def match_group(data, match_ref, **params) :
         groups[g] = [{'':0} for c in params['taxa_columns'] ] 
         ref = pgroup[pgroup.T[1]==g, 0]
         d = data.loc[data['index'].isin(ref)]
-        for part in d[['index', 'barcode'] + list(reversed(params['taxa_columns']))].as_matrix() :
+        for part in d[['index', 'barcode'] + list(reversed(params['taxa_columns']))].values :
             index, barcode, taxa = part[0], part[1], part[2:]
             for t, gg in zip(taxa, groups[g]) :
                 if not (t in ('', '-') and t.startswith('*')):
@@ -567,7 +567,7 @@ def match_group(data, match_ref, **params) :
                            np.sum(assign[assign.T[0] <= 2., 1]), \
                            np.sum(assign[assign.T[0] <= 1., 1]), \
                         ]
-        barcodes = data.loc[data['index'] == idx]['barcode'].as_matrix()[0].split('.')
+        barcodes = data.loc[data['index'] == idx]['barcode'].values[0].split('.')
         for grp, abnd in zip (['~' + barcodes[0][1:]] + barcodes[:4], level_abundance) :
             if abnd <= 0 : continue
             if grp not in results :
@@ -587,7 +587,7 @@ def match_group(data, match_ref, **params) :
             else :
                 taxonomy.append(cnts[0][0])
         if label.startswith('p') :
-            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == content[1][0], ['organism_name', 'assembly_accession']].as_matrix().tolist()[0]) )
+            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == content[1][0], ['organism_name', 'assembly_accession']].values.tolist()[0]) )
         elif label.startswith('s') :
             taxonomy = taxonomy[:-1]
         elif label.startswith('u') :

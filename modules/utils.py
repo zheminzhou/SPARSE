@@ -146,8 +146,8 @@ def get_genome_file(parse, data, folder='.') :
                 e = {d:id for id, d in enumerate('usrpnmeca')}[e]
                 records = data.loc[data['barcode'].str.find(s + '.') >= 0]
                 get_unique = np.vectorize(lambda d, i: d.split('.')[i][1:] == d.split('.')[-1][1:])
-                record = records.loc[get_unique(records['barcode'].as_matrix(), e)]
-        for name, fname, lname in record.loc[:, ['index', 'file_path', 'url_path']].as_matrix() :
+                record = records.loc[get_unique(records['barcode'].values, e)]
+        for name, fname, lname in record.loc[:, ['index', 'file_path', 'url_path']].values :
             if not os.path.isfile(fname) :
                 fname = os.path.join(folder, lname.rsplit('/', 1)[-1])
                 get_file(lname, fname)
@@ -204,7 +204,7 @@ def retrieve_info(group, data=None, **params) :
     g['representative'] = {'assembly_accession':rep.assembly_accession, 'organism_name':rep.organism_name}
     g['taxonomy'] = []
     for tlevel in params['taxa_columns'] :
-        r = list(np.unique(d[tlevel].as_matrix(), return_counts=True))
+        r = list(np.unique(d[tlevel].values, return_counts=True))
         r[0], r[1] = r[0][np.argsort(-r[1])], r[1][np.argsort(-r[1])]
         r[0], r[1] = r[0][r[1] > r[1][0]*0.1], r[1][r[1] > r[1][0]*0.1]
         g['taxonomy'].append( dict(rank=tlevel, freq=[dict(count=c, taxon=t) for c, t in zip(*r)] ))
