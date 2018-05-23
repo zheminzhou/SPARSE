@@ -19,7 +19,7 @@ A second command allows SPARSE to download all genomes in refseq on-fly and cons
 
 Be aware that the newly added genomes are not ready for metagenomic reads. You need to run another command to update your representative databases.
 
-We also release a pre-compiled database named "refseq_20171014", on the basis of NCBI RefSeq at 2017.10.14, at 
+We also release a pre-compiled database named "refseq_20180519", on the basis of NCBI RefSeq at 2018.05.19, at 
 http://enterobase.warwick.ac.uk/sparse/
 
 This database contains the MASH indexed master database and four default mapping databases:
@@ -31,18 +31,21 @@ This database contains the MASH indexed master database and four default mapping
     Virus
     Eukaryota
 
-
-To use the database, just download everything in the folder 
-
-.. code-block:: bash
-
-    refseq_20171014
-
-NOTE: Please keep its folder structure. Then run 
+As well as reference genomes for three important animal hosts:
 
 .. code-block:: bash
 
-    cd refseq_20171014 && sh untar.bash
+    Human
+    Swine
+    Bovine
+
+
+To use the database, just download and untar the package:
+
+.. code-block:: bash
+
+    curl -O refseq_20180531.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180531.tar.gz
+    tar -vxzf refseq_20180531.tar.gz
 
 
 Custom databases

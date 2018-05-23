@@ -111,11 +111,11 @@ def SPARSE() :
     em = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'EM')
     if not os.path.isfile(os.path.join(em, 'solve-model')) :
         print 'SPARSE is run for the first time. We will compile some C++ codes. '
-        t = os.curdir
+        t = os.path.realpath(os.curdir)
         os.chdir(em)
         os.system('make')
         os.chdir(t)
-        assert os.path.isfile(os.path.join(em, 'solve-model')), 'Cannot compile EM/solve-model. Try to run `make` from the folder {0} manually.'.format(em)
+        assert os.path.isfile(os.path.join(em, 'solve-model')), 'Sorry, cannot compile EM/solve-model. Try to run `make` from the folder {0} manually.'.format(em)
         print 'C++ codes compiled successfully. You will not see these the next time. '
     
     try :
