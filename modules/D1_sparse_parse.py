@@ -1,14 +1,14 @@
 import sys, os, math, re
 
 
-def report(level, fnames) :
+def report(fnames, args) :
     pathogens = {
         'Gardnerella ': '* vaginosis',
         ' saprophyticus': '*** urinary tract infections',
         ' bovis': '** bovine pathogen',
         ' parasuis': '* swine pathogen',
         ' suis' : '** swine pathogen',
-        'Leptospira ':'*** Leptospirosis',
+        'Leptospira ':'** Leptospirosis',
         'Corynebacterium ulcerans':'***',
         'Mycobacterium ulcerans':'***',
         'Chlamydia ': '***',
@@ -45,9 +45,9 @@ def report(level, fnames) :
         'Legionella pneumophila':'* legionellosis',
         'Salmonella ':'**** Salmonellosis/Typhoid',
         'Bacillus anthracis':'** Anthrax',
-        'Campylobacter jejuni':'***',
-        ' enterocolitica':'**',
-        'Campylobacter coli':'***',
+        'Campylobacter jejuni':'*** campylobacteriosis',
+        ' enterocolitica':'** enterocolitis',
+        'Campylobacter coli':'*** campylobacteriosis',
         'Staphylococcus aureus':'*',
         'Staphylococcus epidermidis':'*',
         'Pseudomonas aeruginosa':'*',
@@ -70,17 +70,33 @@ def report(level, fnames) :
         'Togaviridae':'**** Virus',
         'Filoviridae':'**** Virus',
         'Poxviridae':'**** Virus',
-        'Neisseria meningitidis':'*** meningitis',
-        'Burkholderia cenocepacia':'**',
-        'Porphyromonas gingivalis':'* red_complex',
-        'Tannerella forsythia':'* red_complex',
-        'Treponema denticola':'* red_complex',
-        'Capnocytophaga ':'* periodontitis',
+        'Neisseria meningitidis':'** meningitis',
+        'Burkholderia cenocepacia':'** cepacia syndrome',
+        
+        'Porphyromonas gingivalis':'** red_complex',
+        'Tannerella forsythia':'** red_complex',
+        'Treponema denticola':'** red_complex',
+        
         'Fusobacterium nucleatum':'* Orange_complex',
-        'Prevotella intermedia':'* Orange_complex',
-        'Campylobacter rectus': '* Orange_complex', 
+        'Campylobacter rectus': '* Orange_complex',
+        'Campylobacter showae': '* Orange_complex', 
+        'Campylobacter gracilis' : '* Orange_complex',
         'Eubacterium ': '* Orange_complex',
         'treptococcus micros':'* Orange_complex',
+        'Prevotella intermedia' : '* Orange_complex', 
+        'Prevotella nigrescens' : '* Orange_complex', 
+        'Streptococcus constellatus' : '* Orange_complex', 
+        
+        
+        'Actinomyces naeslundii':'* Blue_complex', 
+        'Actinomyces viscosus':'* Blue_complex', 
+        'Veillonella parvula':'* Purple_complex',
+        'Actinomyces odontolyticus' : '* Purple_complex', 
+        
+        'Aggregatibacter actinomycetemcomitans':'* HACEK/Green_complex',
+        'Eikenella corrodens':'* HACEK/Green_complex',
+        'Capnocytophaga ':'* Green_complex',
+
         'Entamoeba gingivalis':'* periodontitis',
         'Trichomonas tenax':'* periodontitis',
         'Fusobacterium polymorphum':'* periodontitis',
@@ -90,24 +106,19 @@ def report(level, fnames) :
         'Haemophilus parainfluenzae':'* HACEK',
         'Haemophilus haemolyticus':'* HACEK',
         'Haemophilus parahaemolyticus':'* HACEK',
-        'Aggregatibacter actinomycetemcomitans':'* HACEK/Green_complex',
         'Aggregatibacter segnis':'* HACEK',
         'Aggregatibacter aphrophilus':'* HACEK',
         'Aggregatibacter paraphrophilus':'* HACEK',
         'Cardiobacterium hominis':'* HACEK',
         'Cardiobacterium valvarum':'* HACEK',
-        'Eikenella corrodens':'* HACEK/Green_complex',
-        'Captocytophagia ':'* Green_complex',
         'Kingella kingae':'* HACEK',
         'Kingella denitrificans':'* HACEK',
-        'Actinomyces israelii':'* Blue_complex', 
-        'Actinomyces gerencseriae':'* Blue_complex', 
         'Tropheryma whipplei':'* Whipple disease',
         'Arcanobacterium haemolyticum':'* Arcanobacterium haemolyticum infection',
         'Erysipelothrix rhusiopathiae':'* erysipeloid',
     }
     taxa = {'Unknown':['Dark Matter', 0.]}
-    levels = level.split(',')
+    levels = args.get('level', 's').split(',')
     data = {}
     fnames = [ fname if os.path.isfile(fname) else os.path.join(fname, 'profile.txt') for fname in fnames ]
     for fname in fnames :
@@ -115,22 +126,36 @@ def report(level, fnames) :
         with open(fname) as fin :
             header = fin.readline().strip().split('\t')
             n_tot, n_found = int(header[1]), float(header[2])
+            dark_matter = n_tot if args.get('absolute', False) else 100.
             for line in fin :
-                for level in levels :
+                for level_id, level in enumerate(levels) :
                     if line.startswith(level) :
                         group, p1, p2, taxon = line.strip().split('\t')
+                        p2 = float(p2)
                         taxon = taxon.rsplit(' (', 1)[0]
-                        n_read = int(round(float(p2)/100. * n_found, 0))
-                        if n_read > 0 :
-                            n_tot -= n_read
-                            data[fname][group] = n_read
+                        if (p2*n_found)/n_tot < args.get('low', 0.) : 
+                            continue
+                        if args.get('absolute', False) :
+                            n_read = int(round(float(p2)/100. * n_found, 0))
+                            if n_read > 0 :
+                                if level_id == 0 :
+                                    dark_matter -= n_read
+                                data[fname][group] = n_read
+                                if group not in taxa :
+                                    taxa[group] = [taxon, 0.]
+                                taxa[group][1] += n_read
+                        else :
+                            p_read = (p2*n_found)/n_tot
+                            if level_id == 0 :
+                                dark_matter -= p_read
+                            data[fname][group] = p_read
                             if group not in taxa :
                                 taxa[group] = [taxon, 0.]
-                            taxa[group][1] += n_read
-            data[fname]['Unknown'] = n_tot
+                            taxa[group][1] += p_read
+            data[fname]['Unknown'] = dark_matter
     pathogens = sorted(pathogens.items(), key=lambda x:x[1])
     taxa_list = [t[0] for t in sorted(taxa.items(), key=lambda x:x[1][1], reverse=True)]
-    print '#Group\t#Pathogenic\t{0}\t#Taxon\t#Pathogenic'.format('\t'.join(fnames))
+    print '#Group\t#Pathogenic\t{0}\t#Species\t#Taxon'.format('\t'.join([ fn.rsplit('/', 1)[0] for fn in fnames]))
     for group in taxa_list :
         label = 'non'
         taxon = taxa[group][0].rsplit('(', 1)[0]
@@ -138,7 +163,8 @@ def report(level, fnames) :
             if re.findall(p, taxon) :
                 label = t
                 break
-        print '{0}\t{3}\t{1}\t{2}'.format(group, '\t'.join([ str(data[fn].get(group, 0)) for fn in fnames ]), taxa[group][0], label)
+        species = taxa[group][0].split('|')[7] if taxa[group][0] != 'Dark Matter' else '-'
+        print '{0}\t{3}\t{1}\t{4}\t{2}'.format(group, '\t'.join([ str(data[fn].get(group, 0)) for fn in fnames ]), taxa[group][0], label, species)
 
 if __name__ == '__main__' :
-    report(sys.argv[1], sys.argv[2:])
+    report(sys.argv[1:], {})
