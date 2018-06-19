@@ -44,7 +44,7 @@ To use the database, just download and untar the package (~350 GB):
 
 .. code-block:: bash
 
-    curl -O refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+    curl -o refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
     tar -vxzf refseq_20180519.tar.gz
 
 
