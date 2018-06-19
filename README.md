@@ -56,8 +56,8 @@ See http://sparse.readthedocs.io/en/latest/ for full documentation.
 We provide a pre-compiled database based on RefSeq (dated 19.05.2018) to download at http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
 . The database can be downloaded and unpacked by running:
    ```
-   curl http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
-   tar -vxzf refseq_20180519.tar.gz
+    curl -o refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+    tar -vxzf refseq_20180519.tar.gz
    ```
    This pre-compiled database contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
    
