@@ -59,7 +59,8 @@ We provide a pre-compiled database based on RefSeq (dated 19.05.2018) to downloa
     curl -o refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
     tar -vxzf refseq_20180519.tar.gz
    ```
-   This pre-compiled database contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
+   
+   This pre-compiled database is about 350GB and contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
    
    To update the database or build a costum database, please refer to the full documentation.
    
