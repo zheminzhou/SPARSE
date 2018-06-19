@@ -40,12 +40,12 @@ As well as reference genomes for three important animal hosts:
     Bovine
 
 
-To use the database, just download and untar the package:
+To use the database, just download and untar the package (~350 GB):
 
 .. code-block:: bash
 
-    curl -O refseq_20180531.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180531.tar.gz
-    tar -vxzf refseq_20180531.tar.gz
+    curl -O refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+    tar -vxzf refseq_20180519.tar.gz
 
 
 Custom databases
