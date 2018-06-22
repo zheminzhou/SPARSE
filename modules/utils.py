@@ -114,8 +114,7 @@ def load_paramDict(c2) :
     config = json.load(open(os.path.join(c2['dbname'], 'dbsetting.cfg')))
     if config['BIN'] != '' and not config['BIN'].endswith('/') :
         config['BIN'] = config['BIN'].strip() + '/'
-    if config['SPARSE'] == '' :
-        config['SPARSE'] = os.path.realpath(__file__).replace('\\', '/').rsplit('/', 1)[0]
+    config['SPARSE'] = os.path.realpath(__file__).replace('\\', '/').rsplit('/', 2)[0]
     for k in c2 :
         if k in config :
             if isinstance(config[k], int) :
@@ -128,6 +127,9 @@ def load_paramDict(c2) :
     for k in config :
         if isinstance(config[k], basestring) and '{' in config[k] :
             config[k] = config[k].format(**config)
+    for key in ('mash', 'minimap2', 'samtools') :
+        if not os.path.isfile(config[key]) :
+            config[key] = key
     return config
 
 

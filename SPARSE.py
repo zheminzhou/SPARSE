@@ -103,7 +103,7 @@ def _report(argv) :
     parser.add_argument('-l', '--level', help='Level to report, default: s. Details see documents for the seqlist format.', default='s')
     parser.add_argument('--absolute', help='Report absolute numbers. Default: False (report percentages)', action='store_true', default=False)
     parser.add_argument('--low', help='Lower limit of percentage for a value to report. Default: 0.0', default=0., type=float)
-    parser.add_argument('workspaces', metavar='workspace', nargs='+', help='Folders that contain "SPARSE query" outputs. REQUIRED at least one folder.')
+    parser.add_argument('workspaces', metavar='workspace', nargs='+', help='Folders that contain "SPARSE query" outputs. REQUIRED at least one folder.', required=True)
     args = parser.parse_args(argv)
     report(args.workspaces, args.__dict__)
 
