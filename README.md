@@ -53,12 +53,14 @@ See http://sparse.readthedocs.io/en/latest/ for full documentation.
 
 1. **Download reference database**
 
-We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to download at http://enterobase.warwick.ac.uk/sparse/
-   Please download the complete folder refseq_20171014/ and do not change its internal folder structure. The database can be unpacked by running:
+We provide a pre-compiled database based on RefSeq (dated 19.05.2018) to download at http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+. The database can be downloaded and unpacked by running:
    ```
-   cd refseq_20171014 && sh untar.bash
+    curl -o refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+    tar -vxzf refseq_20180519.tar.gz
    ```
-   This pre-compiled database contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
+   
+   This pre-compiled database is about 350GB and contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
    
    To update the database or build a costum database, please refer to the full documentation.
    
@@ -66,7 +68,7 @@ We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to downloa
 
 This following command will map and evaluate all reads in both fastq-files against the specified mapping databases. 
 ```
-python SPARSE.py predict --dbname refseq_20171014 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
+python SPARSE.py predict --dbname refseq_20180519 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
 ```
 For single-end reads, only --r1 needs to be specified. All output files are stored in the respective workspace.
 
