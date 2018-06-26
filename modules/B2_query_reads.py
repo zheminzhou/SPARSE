@@ -194,7 +194,18 @@ def summary_matrix(data, MapDB, workspace, bowtie_db, mismatch=0.05, n_thread=10
     print time.time()-o_t, "info prepared."
     sys.stdout.flush()
     
-    maps, seqinfo = np.vstack([np.load(mfile) for mfile in map_files]), np.vstack([np.load(sfile) for sfile in seq_files])
+    maps = []
+    for mfile in map_files :
+        t = np.load(mfile)
+        if t.size > 0 :
+            maps.append(t)
+    seqinfo = []
+    for sfile in seq_files :
+        t = np.load(sfile)
+        if t.size > 0 :
+            seqinfo.append(t)
+    maps = np.vstack(maps)
+    seqinfo = np.vstack(seqinfo)
 
     maps = parse_mapping(data, seqinfo, maps, mismatch)
     
