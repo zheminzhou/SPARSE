@@ -71,3 +71,37 @@ The correlation between prefix and ANI level is:
 
 
 's' (ANI 95%) is normally treated as a 'gold standard' criterion for species definition. 
+
+The traditional taxonomic labels for SPARSE tags are shown in format:
+
+.. code-block:: bash
+
+  <superkingdom>|<kingdom>|<phylum>|<class>|<order>|<family>|<genus>|<species>|<subspecies>|<reference_genome>
+
+
+These taxonomic labels are summarised from the database you used. Sometimes multiple species can be associated with one SPARSE tag. For example:
+
+.. code-block:: bash
+
+  s613    1.4507  1.6302  Bacteria|-|Firmicutes|Negativicutes|Veillonellales|Veillonellaceae|Veillonella|Veillonella parvula (*Veillonella sp. 6_1_27/*Veillonella sp. S13054-11/*Veillonella sp. 3_1_44) (16778,16416,117596,16415,10931,17276,113949,60730,613)
+
+Tag s613 is associated with four different species 
+
+.. code-block:: bash
+
+  Veillonella parvula
+  *Veillonella sp. 6_1_27
+  *Veillonella sp. S13054-11
+  *Veillonella sp. 3_1_44
+  
+All these species names other than 'Veillonella parvula' starts with a prefix "*" because they are informal names. The most probable species is shown first whereas others are also shown in bracket. There is another bracket after the taxonomic labels. 
+
+.. code-block:: bash
+
+  (16778,16416,117596,16415,10931,17276,113949,60730,613)
+
+These are the IDs of the actual reference genomes that were found in the database. They were used to extract reference specific reads using 'sparse extract' command.
+
+
+Output for 'sparse report'
+-------------------------------
