@@ -58,16 +58,16 @@ The correlation between prefix and ANI level is:
 
 .. code-block:: bash
 
-~		<90% ANI
-u		90% ANI
-s		95% ANI
-r		98% ANI
-p		99% ANI
-n		99.5% ANI
-m		99.8% ANI
-e		99.9% ANI
-c		99.95% ANI
-a		100% ANI
+  ~		<90% ANI
+  u		90% ANI
+  s		95% ANI
+  r		98% ANI
+  p		99% ANI
+  n		99.5% ANI
+  m		99.8% ANI
+  e		99.9% ANI
+  c		99.95% ANI
+  a		100% ANI
 
 
 's' (ANI 95%) is normally treated as a 'gold standard' criterion for species definition. 
