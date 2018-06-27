@@ -95,7 +95,7 @@ Where group s613 is associated with four different species
   *Veillonella sp. S13054-11
   *Veillonella sp. 3_1_44
   
-All these species names other than 'Veillonella parvula' starts with a prefix "*" because they are informal names. The most probable species is shown first whereas others are also shown in bracket. There is another bracket after the taxonomic labels. 
+All these species names other than 'Veillonella parvula' starts with a prefix "*" because they are informal names. The most probable species is shown first, and followed with the other three names in a bracket. There is another bracket after the taxonomic labels. 
 
 .. code-block:: bash
 
