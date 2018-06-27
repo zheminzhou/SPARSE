@@ -36,6 +36,7 @@ The following lines describe the prediction for each taxonomic levels, in format
 
 
 For example
+
 .. code-block:: bash
 
   ~154    2.1706  2.4392  Bacteria|-|Actinobacteria|Actinobacteria|Micrococcales|Micrococcaceae (15969,66991,66935,66915,67189,110179,40981,154,67166,67220,114405,66878,66930,82153,40861,40710,67029)
@@ -54,6 +55,7 @@ The SPARSE tags are internal hierarchical clustering levels used in SPARSE datab
 
 For example, 's154' is a cluster '154' in 's' level (ANI 95%)
 The correlation between prefix and ANI level is:
+
 .. code-block:: bash
 
 ~		<90% ANI
