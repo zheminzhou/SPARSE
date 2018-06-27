@@ -2,7 +2,7 @@
 Outputs
 ========================================
 
-Output for 'sparse query'
+Output for 'sparse predict'
 -------------------------------
 The taxonomic profiling results for 'sparse query' is saved in <workspace>/profile.txt
 
@@ -106,7 +106,7 @@ These are the IDs of the actual reference genomes that were found in the databas
 
 Output for 'sparse report'
 -------------------------------
-sparse report combines multiple 'sparse query' runs together into a tab-delimited text file, and tries to identify potential pathogens in the predictions. 
+sparse report combines multiple 'sparse predict' runs together into a tab-delimited text file, and tries to identify potential pathogens in the predictions. 
 
 .. code-block:: bash
 
@@ -121,7 +121,7 @@ sparse report combines multiple 'sparse query' runs together into a tab-delimite
   s2189   non     0.87220732902   0.296597041195  Corynebacterium matruchotii     Bacteria|-|Actinobacteria|Actinobacteria|Corynebacteriales|Corynebacteriaceae|Corynebacterium|Corynebacterium matruchotii
   s108979 non     0.295928369726  0.857545958706  *Actinomyces sp. oral taxon 897 Bacteria|-|Actinobacteria|Actinobacteria|Actinomycetales|Actinomycetaceae|Actinomyces|*Actinomyces sp. oral taxon 897
 
-The first line shows the samples in the report, as well as additional annotations (starts with '#'). #Group and #Taxon are the same as the outputs of 'sparse query'. #Species is a simple extraction of the most probably species in #Taxon column and #Pathogenic consists of the interpretations, where
+The first line shows the samples in the report, as well as additional annotations (starts with '#'). #Group and #Taxon are the same as in 'sparse predict' output. #Species is a simple extraction of the most probably species in #Taxon column and #Pathogenic consists of the interpretations, where
 
 .. code-block:: bash
 
