@@ -32,7 +32,7 @@ The following lines describe the prediction for each taxonomic levels, in format
 
 .. code-block:: bash
 
-  <SPARSE tag>	<% in total reads>	<% in matched reads>	<taxonomic labels> (<reference IDs>)
+  <SPARSE group>	<% in total reads>	<% in matched reads>	<taxonomic labels> (<reference IDs>)
 
 
 For example
@@ -51,9 +51,9 @@ For example
   p16416  0.1631  0.1833  Bacteria|-|Firmicutes|Negativicutes|Veillonellales|Veillonellaceae|Veillonella|*Veillonella sp. 6_1_27|-|Veillonella sp. 6_1_27: GCF_000163735.1 (16416)
 
 
-The SPARSE tags are internal hierarchical clustering levels used in SPARSE database. It consists two components. The prefix describes the ANI level of the cluster and the following number is the designation of the cluster. 
+The SPARSE groups are internal hierarchical clustering levels used in SPARSE database. It consists two components. The prefix describes the ANI level of the cluster and the following number is the designation of the cluster. 
 
-For example, 's154' is a cluster '154' in 's' level (ANI 95%)
+For example, 's613' is a cluster '613' in 's' level (ANI 95%)
 The correlation between prefix and ANI level is:
 
 .. code-block:: bash
@@ -72,20 +72,21 @@ The correlation between prefix and ANI level is:
 
 's' (ANI 95%) is normally treated as a 'gold standard' criterion for species definition. 
 
-The traditional taxonomic labels for SPARSE tags are shown in format:
+The traditional taxonomic labels for SPARSE groups are shown in format:
 
 .. code-block:: bash
 
   <superkingdom>|<kingdom>|<phylum>|<class>|<order>|<family>|<genus>|<species>|<subspecies>|<reference_genome>
 
 
-These taxonomic labels are summarised from the database you used. Sometimes multiple species can be associated with one SPARSE tag. For example:
+These taxonomic labels are summarised from the database inputed. Sometimes multiple species can be associated with one SPARSE group. For example:
 
 .. code-block:: bash
 
   s613    1.4507  1.6302  Bacteria|-|Firmicutes|Negativicutes|Veillonellales|Veillonellaceae|Veillonella|Veillonella parvula (*Veillonella sp. 6_1_27/*Veillonella sp. S13054-11/*Veillonella sp. 3_1_44) (16778,16416,117596,16415,10931,17276,113949,60730,613)
 
-Tag s613 is associated with four different species 
+
+Where group s613 is associated with four different species 
 
 .. code-block:: bash
 
@@ -105,3 +106,31 @@ These are the IDs of the actual reference genomes that were found in the databas
 
 Output for 'sparse report'
 -------------------------------
+sparse report combines multiple 'sparse query' runs together into a tab-delimited text file, and tries to identify potential pathogens in the predictions. 
+
+.. code-block:: bash
+
+  #Group  #Pathogenic     ERR1659111      ERR1659110      #Species        #Taxon
+  s3080   non     4.47309775569   4.84028327303   Actinomyces dentalis (*Actinomyces sp. oral taxon 414)  Bacteria|-|Actinobacteria|Actinobacteria|Actinomycetales|Actinomycetaceae|Actinomyces|Actinomyces dentalis (*Actinomyces sp. oral taxon 414)
+  s1438   non     0.821962806352  3.57658189557   Desulfomicrobium orale  Bacteria|-|Proteobacteria|Deltaproteobacteria|Desulfovibrionales|Desulfomicrobiaceae|Desulfomicrobium|Desulfomicrobium orale
+  s9975   non     2.04489272864   1.85184148971   *Anaerolineaceae bacterium oral taxon 439       Bacteria|-|Chloroflexi|Anaerolineae|Anaerolineales|Anaerolineaceae|-|*Anaerolineaceae bacterium oral taxon 439
+  s939    non     1.81538010098   0.712860400235  Pseudopropionibacterium propionicum     Bacteria|-|Actinobacteria|Actinobacteria|Propionibacteriales|Propionibacteriaceae|Pseudopropionibacterium|Pseudopropionibacterium propionicum
+  s8820   non     1.67063037869   0.491279312566  *Ottowia sp. Marseille-P4747 (*Ottowia sp. oral taxon 894)      Bacteria|-|Proteobacteria|Betaproteobacteria|Burkholderiales|Comamonadaceae|Ottowia|*Ottowia sp. Marseille-P4747 (*Ottowia sp. oral taxon 894)
+  s2215   non     1.31802856115   0.34575838713   Lautropia mirabilis     Bacteria|-|Proteobacteria|Betaproteobacteria|Burkholderiales|Burkholderiaceae|Lautropia|Lautropia mirabilis
+  s2590   non     0.665641018802  0.612783437737  Actinomyces cardiffensis        Bacteria|-|Actinobacteria|Actinobacteria|Actinomycetales|Actinomycetaceae|Actinomyces|Actinomyces cardiffensis
+  s2189   non     0.87220732902   0.296597041195  Corynebacterium matruchotii     Bacteria|-|Actinobacteria|Actinobacteria|Corynebacteriales|Corynebacteriaceae|Corynebacterium|Corynebacterium matruchotii
+  s108979 non     0.295928369726  0.857545958706  *Actinomyces sp. oral taxon 897 Bacteria|-|Actinobacteria|Actinobacteria|Actinomycetales|Actinomycetaceae|Actinomyces|*Actinomyces sp. oral taxon 897
+
+The first line shows the samples in the report, as well as additional annotations (starts with '#'). #Group and #Taxon are the same as the outputs of 'sparse query'. #Species is a simple extraction of the most probably species in #Taxon column and #Pathogenic consists of the interpretations, where
+
+.. code-block:: bash
+
+  non - not a pathogen
+  * - commensal and normally not a pathogen
+  ** - Possibly a pathogen
+  *** - Pathogen
+  **** - Important pathogen, possibly fatal
+
+The numbers shows the abundances of the species in each metagenomic read set. It is normally shown in percentages, unless parameter '--absolute' is applied, which changes the numbers to be absolute read counts. 
+
+The last row of the output is 'dark matters', which is a summary of all unknown/uncertain reads. 
