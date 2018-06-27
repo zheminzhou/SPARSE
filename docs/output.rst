@@ -19,9 +19,9 @@ For example
 
 .. code-block:: bash
 
-  Total	26726530	23783388.0
-  Unmatched	11.012	0.000
-  Uncertain_match	36.102	40.570
+  Total   26726530   23783388.0
+  Unmatched   11.012   0.000
+  Uncertain_match   36.102   40.570
 
 
 
@@ -32,7 +32,7 @@ The following lines describe the prediction for each taxonomic levels, in format
 
 .. code-block:: bash
 
-  <SPARSE group>	<% in total reads>	<% in matched reads>	<taxonomic labels> (<reference IDs>)
+  <SPARSE group>   <% in total reads>   <% in matched reads>   <taxonomic labels>   (<reference IDs>)
 
 
 For example
@@ -58,16 +58,16 @@ The correlation between prefix and ANI level is:
 
 .. code-block:: bash
 
-  ~		<90% ANI
-  u		90% ANI
-  s		95% ANI
-  r		98% ANI
-  p		99% ANI
-  n		99.5% ANI
-  m		99.8% ANI
-  e		99.9% ANI
-  c		99.95% ANI
-  a		100% ANI
+  ~	<90% ANI
+  u	90% ANI
+  s	95% ANI
+  r	98% ANI
+  p	99% ANI
+  n	99.5% ANI
+  m	99.8% ANI
+  e	99.9% ANI
+  c	99.95% ANI
+  a	100% ANI
 
 
 's' (ANI 95%) is normally treated as a 'gold standard' criterion for species definition. 
@@ -125,10 +125,10 @@ The first line shows the samples in the report, as well as additional annotation
 
 .. code-block:: bash
 
-  non - not a pathogen
-  * - commensal and normally not a pathogen
-  ** - Possibly a pathogen
-  *** - Pathogen
+  non  - not a pathogen
+  *    - commensal and normally not a pathogen
+  **   - Possibly a pathogen
+  ***  - Pathogen
   **** - Important pathogen, possibly fatal
 
 The numbers shows the abundances of the species in each metagenomic read set. It is normally shown in percentages, unless parameter '--absolute' is applied, which changes the numbers to be absolute read counts. 
