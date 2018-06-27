@@ -16,11 +16,13 @@ The first three rows in 'profile.txt' summarizes the status of reads
 
 
 For example
+
 .. code-block:: bash
 
   Total	26726530	23783388.0
   Unmatched	11.012	0.000
   Uncertain_match	36.102	40.570
+
 
 
 Suggests that 89% of reads found at least one match in the reference database. And 60% of all found matches are used for taxonomic predictions. 
