@@ -28,7 +28,7 @@ SPARSE runs on Unix and requires Python version 2.7 (Python 3.x supports are und
 
 See [requirements.txt](requirements.txt) for python module dependencies. 
 
-### Installation via PIP
+### Installation via PIP [Suggested]
 
     pip install meta-sparse
 
@@ -42,7 +42,11 @@ See [requirements.txt](requirements.txt) for python module dependencies.
     
 
 ### Updating SPARSE
-To update SPARSE, move to installation directory and pull the latest version:  
+You can update to latest version using PIP:
+```
+pip install --upgrade meta-sparse
+```
+If you installed SPARSE from github, move to installation directory and pull the latest version:  
 
     cd SPARSE
     git pull
