@@ -92,6 +92,8 @@ python SPARSE.py extract --dbname refseq_20171014 --workspace <workspace_name> -
 
 
 ## Citation
-SPARSE has not been formally published yet. If you use SPARSE please cite the preprint https://www.biorxiv.org/content/early/2017/11/07/215707
+SPARSE is published as a conference proceeding in "Research in Computational Molecular Biology".
 
-Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman, 'Accurate Reconstruction of Microbial Strains Using Representative Reference Genomes' bioRxiv 215707; doi: https://doi.org/10.1101/215707
+Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman, 'Accurate Reconstruction of Microbial Strains from Metagenomic Sequencing Using Representative Reference Genomes' RECOMB 2018: Research in Computational Molecular Biology pp 225-240. doi: https://doi.org/10.1007/978-3-319-89929-9_15
+
+A preprint version of the manuscript is also accessible in bioRxiv: https://doi.org/10.1101/215707
