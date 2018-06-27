@@ -51,7 +51,7 @@ For example
   p16416  0.1631  0.1833  Bacteria|-|Firmicutes|Negativicutes|Veillonellales|Veillonellaceae|Veillonella|*Veillonella sp. 6_1_27|-|Veillonella sp. 6_1_27: GCF_000163735.1 (16416)
 
 
-The SPARSE groups are internal hierarchical clustering levels used in SPARSE database. It consists two components. The prefix describes the ANI level of the cluster and the following number is the designation of the cluster. 
+The SPARSE groups are internal hierarchical clustering results stored in the SPARSE database. The group label consists of two components. The prefix presents the ANI level of the cluster and the following number presents the designation of the cluster. 
 
 For example, 's613' is a cluster '613' in 's' level (ANI 95%)
 The correlation between prefix and ANI level is:
