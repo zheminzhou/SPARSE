@@ -91,7 +91,7 @@ def _update(argv) :
 def _extract(argv) :
     from modules.C2_get_specific_reads import get_SSR
     parser = argparse.ArgumentParser(description='''Extract species specific reads associated with particular references.''', formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-w', '--workspace', help='Folders that contain "SPARSE query" outputs. REQUIRED.', required=True)
+    parser.add_argument('-w', '--workspace', help='Folders that contain "SPARSE extract" outputs. REQUIRED.', required=True)
     parser.add_argument('-i', '--ref_id', help='Comma delimited reference indexes to extract. REQUIRED.', required=True)
     parser.add_argument('-r', '--ratio', help='The minimum probability to report.', default=0.5, type=float)
     args = parser.parse_args(argv)
@@ -103,7 +103,7 @@ def _report(argv) :
     parser.add_argument('-l', '--level', help='Level to report, default: s. Details see documents for the seqlist format.', default='s')
     parser.add_argument('--absolute', help='Report absolute numbers. Default: False (report percentages)', action='store_true', default=False)
     parser.add_argument('--low', help='Lower limit of percentage for a value to report. Default: 0.0', default=0., type=float)
-    parser.add_argument('workspaces', metavar='workspace', nargs='+', help='Folders that contain "SPARSE query" outputs. REQUIRED at least one folder.')
+    parser.add_argument('workspaces', metavar='workspace', nargs='+', help='Folders that contain "SPARSE extract" outputs. REQUIRED at least one folder.')
     args = parser.parse_args(argv)
     report(args.workspaces, args.__dict__)
 
