@@ -7,7 +7,7 @@ You can also custom the representative databases. Here a human genome is used as
 
 .. code-block:: bash
 
-    python SPARSE.py query --dbname refseq_20171014 --assembly_accession GCF_000001405.37 > human.tsv
+    sparse query --dbname refseq_20171014 --assembly_accession GCF_000001405.37 > human.tsv
 
 **The resulting file is:**
 
@@ -21,7 +21,7 @@ You can also custom the representative databases. Here a human genome is used as
 
 .. code-block:: bash
 
-    python SPARSE.py mapDB --dbname refseq --mapDB Human --seqlist human.tsv
+    sparse mapDB --dbname refseq --mapDB Human --seqlist human.tsv
 
 
 Metagenomic reads are assigned using these representative databases, details see section on  "read-level prediction".
