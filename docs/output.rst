@@ -4,9 +4,9 @@ Outputs
 
 Output for 'sparse predict'
 -------------------------------
-The taxonomic profiling results for 'sparse query' is saved in <workspace>/profile.txt
+The taxonomic profiling results for 'sparse query' are saved in <workspace>/profile.txt
 
-The first three rows in 'profile.txt' summarizes the status of reads
+The first three rows in 'profile.txt' summarize the status of the reads from the metagenomic sample:
 
 .. code-block:: bash
 
@@ -15,7 +15,7 @@ The first three rows in 'profile.txt' summarizes the status of reads
   Uncertain_match	<% unreliable matches in total reads>	<% unreliable matches in total matches>
 
 
-For example
+Example:
 
 .. code-block:: bash
 
@@ -25,17 +25,17 @@ For example
 
 
 
-Suggests that 89% of reads found at least one match in the reference database. And 60% of all found matches are used for taxonomic predictions. 
+This example suggests that 89% of reads are matched against at least one reference in the database. Subsequently, 60% of all matches found are used for taxonomic predictions. 
 
 
-The following lines describe the prediction for each taxonomic levels, in format:
+The following lines describe the prediction at different taxonomic levels, in the following format:
 
 .. code-block:: bash
 
   <SPARSE group>   <% in total reads>   <% in matched reads>   <taxonomic labels>   (<reference IDs>)
 
 
-For example
+Example:
 
 .. code-block:: bash
 
@@ -53,7 +53,7 @@ For example
 
 The SPARSE groups are internal hierarchical clustering results stored in the SPARSE database. The group label consists of two components. The prefix presents the ANI level of the cluster and the following number presents the designation of the cluster. 
 
-For example, 's613' is a cluster '613' in 's' level (ANI 95%)
+For example, 's613' is a cluster '613' in 's' level (ANI 95%, "species level")
 The correlation between prefix and ANI level is:
 
 .. code-block:: bash
@@ -72,21 +72,21 @@ The correlation between prefix and ANI level is:
 
 's' (ANI 95%) is normally treated as a 'gold standard' criterion for species definition. 
 
-The traditional taxonomic labels for SPARSE groups are shown in format:
+For each SPARSE goup, the traditional taxonomic labels follow the format:
 
 .. code-block:: bash
 
   <superkingdom>|<kingdom>|<phylum>|<class>|<order>|<family>|<genus>|<species>|<subspecies>|<reference_genome>
 
 
-These taxonomic labels are summarised from the database inputed. Sometimes multiple species can be associated with one SPARSE group. For example:
+These taxonomic labels are summarised from the input database. Sometimes multiple species will be associated with one SPARSE group:
 
 .. code-block:: bash
 
   s613    1.4507  1.6302  Bacteria|-|Firmicutes|Negativicutes|Veillonellales|Veillonellaceae|Veillonella|Veillonella parvula (*Veillonella sp. 6_1_27/*Veillonella sp. S13054-11/*Veillonella sp. 3_1_44) (16778,16416,117596,16415,10931,17276,113949,60730,613)
 
 
-Where group s613 is associated with four different species 
+In this example, group s613 is associated with four different species:
 
 .. code-block:: bash
 
@@ -95,18 +95,18 @@ Where group s613 is associated with four different species
   *Veillonella sp. S13054-11
   *Veillonella sp. 3_1_44
   
-All these species names other than 'Veillonella parvula' starts with a prefix "*" because they are informal names. The most probable species is shown first, and followed with the other three names in a bracket. There is another bracket after the taxonomic labels. 
+Informal names are marked with prefix "*". The most probable species is shown first, and followed by the other three names in a bracket. There is another bracket after the taxonomic labels:
 
 .. code-block:: bash
 
   (16778,16416,117596,16415,10931,17276,113949,60730,613)
 
-These are the IDs of the actual reference genomes that were found in the database. They were used to extract reference specific reads using 'sparse extract' command.
+These are the IDs of the actual reference genomes that were found in the database. They can be used to extract reference specific reads using the command 'sparse extract'.
 
 
 Output for 'sparse report'
 -------------------------------
-sparse report combines multiple 'sparse predict' runs together into a tab-delimited text file, and tries to identify potential pathogens in the predictions. 
+sparse can provide a report that combines multiple 'sparse predict' runs together into a tab-delimited text file. This command also identifies potential pathogens in the predictions. 
 
 .. code-block:: bash
 
@@ -121,7 +121,7 @@ sparse report combines multiple 'sparse predict' runs together into a tab-delimi
   s2189   non     0.87220732902   0.296597041195  Corynebacterium matruchotii     Bacteria|-|Actinobacteria|Actinobacteria|Corynebacteriales|Corynebacteriaceae|Corynebacterium|Corynebacterium matruchotii
   s108979 non     0.295928369726  0.857545958706  *Actinomyces sp. oral taxon 897 Bacteria|-|Actinobacteria|Actinobacteria|Actinomycetales|Actinomycetaceae|Actinomyces|*Actinomyces sp. oral taxon 897
 
-The first line shows the samples in the report, as well as additional annotations (starts with '#'). #Group and #Taxon are the same as in 'sparse predict' output. #Species is a simple extraction of the most probably species in #Taxon column and #Pathogenic consists of the interpretations, where
+The first line shows the samples in the report, as well as additional annotations (starts with '#'). #Group and #Taxon are identical to the 'sparse predict' output. #Species is a simple extraction of the most probably species in the #Taxon column and #Pathogenic contains potential pathogen predictions encoded as:
 
 .. code-block:: bash
 
@@ -133,4 +133,4 @@ The first line shows the samples in the report, as well as additional annotation
 
 The numbers shows the abundances of the species in each metagenomic read set. It is normally shown in percentages, unless parameter '--absolute' is applied, which changes the numbers to be absolute read counts. 
 
-The last row of the output is 'dark matters', which is a summary of all unknown/uncertain reads. 
+The last row of the output is a summary of all unknown/uncertain reads without taxonomic classifications.
