@@ -116,6 +116,8 @@ def report(fnames, args) :
         'Tropheryma whipplei':'* Whipple disease',
         'Arcanobacterium haemolyticum':'* Arcanobacterium haemolyticum infection',
         'Erysipelothrix rhusiopathiae':'* erysipeloid',
+        'Streptococcus mutans': '** dental_caries',
+        'Streptococcus sobrinus': '** dental_caries',
     }
     taxa = {'Unknown':['Dark Matter', 0.]}
     levels = args.get('level', 's').split(',')
