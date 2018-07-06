@@ -7,7 +7,7 @@ We firstly construct an empty database folder and assigns default control parame
 
 .. code-block:: bash
 
-    python SPARSE.py init --dbname refseq
+    sparse init --dbname refseq
 
 Index refseq database or update an exising database
 ---------------------------------------------------
@@ -15,7 +15,7 @@ A second command allows SPARSE to download all genomes in refseq on-fly and cons
 
 .. code-block:: bash
 
-    python SPARSE.py index --dbname refseq --update
+    sparse index --dbname refseq --update
 
 Be aware that the newly added genomes are not ready for metagenomic reads. You need to run another command to update your representative databases.
 

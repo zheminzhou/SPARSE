@@ -72,13 +72,13 @@ We provide a pre-compiled database based on RefSeq (dated 19.05.2018) to downloa
 
 This following command will map and evaluate all reads in both fastq-files against the specified mapping databases. 
 ```
-python SPARSE.py predict --dbname refseq_20180519 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
+sparse predict --dbname refseq_20180519 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
 ```
 For single-end reads, only --r1 needs to be specified. All output files are stored in the respective workspace.
 
 3. **Create a report**
 ```
-python SPARSE.py report <workspace_name>
+sparse report <workspace_name>
 ```
 The report will be stored in <workspace_name>/profile.txt
 
@@ -86,7 +86,7 @@ The report will be stored in <workspace_name>/profile.txt
 
 The following command extracts all reads specific to the provided reference ids, which can be found in the output of step 2.
 ```
-python SPARSE.py extract --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
+sparse extract --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
 ```
 
 

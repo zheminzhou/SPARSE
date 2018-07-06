@@ -8,10 +8,10 @@ SPARSE allows ultra-efficient taxonomic assignment with genomic assemblies or re
 
 .. code-block:: bash
 
-    python SPARSE.py mash --dbname refseq --query <assembly file>
+    sparse mash --dbname refseq --query <assembly file>
 
 *Read set (in fastq format, either gzipped or not) :*
 
 .. code-block:: bash
 
-    python SPARSE.py mash --dbname refseq --query <read file> --read
+    sparse mash --dbname refseq --query <read file> --read
