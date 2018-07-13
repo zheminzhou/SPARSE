@@ -1,6 +1,16 @@
-import sys, os, math, re
+import sys, os, math, re, numpy as np
 
-
+def readSpeciesFilter(fname) :
+    f = {fname:'*'}
+    if os.path.isfile(fname) :
+        with open(fname) as fin :
+            for line in fin :
+                part = line.rstrip().split('\t')
+                if len(part) == 1 or part[1] == '' :
+                    f[part[0]] = '*'
+                else :
+                    f[part[0]] = part[1]
+    return f
 def report(fnames, args) :
     pathogens = {
         'Gardnerella ': '* vaginosis',
@@ -119,8 +129,11 @@ def report(fnames, args) :
         'Streptococcus mutans': '** dental_caries',
         'Streptococcus sobrinus': '** dental_caries',
     }
+    if  args['speciesFilter'] :
+        pathogens = readSpeciesFilter(args['speciesFilter'])
+
     taxa = {'Unknown':['Dark Matter', 0.]}
-    levels = args.get('level', 's').split(',')
+    levels = args.get('tag', 's').split(',')
     data = {}
     fnames = [ fname if os.path.isfile(fname) else os.path.join(fname, 'profile.txt') for fname in fnames ]
     for fname in fnames :
@@ -157,7 +170,8 @@ def report(fnames, args) :
             data[fname]['Unknown'] = dark_matter
     pathogens = sorted(pathogens.items(), key=lambda x:x[1])
     taxa_list = [t[0] for t in sorted(taxa.items(), key=lambda x:x[1][1], reverse=True)]
-    print '#Group\t#Pathogenic\t{0}\t#Species\t#Taxon'.format('\t'.join([ fn.rsplit('/', 1)[0] for fn in fnames]))
+    mat = [['#Group', '#Label'] + [ fn.rsplit('/', 1)[0] for fn in fnames ] + ['#Species', '#Taxon']]
+    #print '#Group\t#Label\t{0}\t#Species\t#Taxon'.format('\t'.join([ fn.rsplit('/', 1)[0] for fn in fnames]))
     for group in taxa_list :
         label = 'non'
         taxon = taxa[group][0].rsplit('(', 1)[0]
@@ -165,8 +179,25 @@ def report(fnames, args) :
             if re.findall(p, taxon) :
                 label = t
                 break
-        species = taxa[group][0].split('|')[7] if taxa[group][0] != 'Dark Matter' else '-'
-        print '{0}\t{3}\t{1}\t{4}\t{2}'.format(group, '\t'.join([ str(data[fn].get(group, 0)) for fn in fnames ]), taxa[group][0], label, species)
+        if label == 'non' and args['speciesFilter'] :
+            continue
+        try:
+            species = taxa[group][0].split('|')[7] if taxa[group][0] != 'Dark Matter' else '-'
+        except :
+            species = '-'
+        mat.append([group, label ] + [ str(data[fn].get(group, 0)) for fn in fnames ] + [species, taxa[group][0]])
+        #print '{0}\t{3}\t{1}\t{4}\t{2}'.format(group, '\t'.join([ str(data[fn].get(group, 0)) for fn in fnames ]), taxa[group][0], label, species)
+    mat = np.array(mat, dtype=str)
+    if args['sampleFilter'] and mat.shape[0] > 1 :
+        d = mat[1:, 2:-2].astype(float)
+        dd = np.concatenate([[0, 1] , np.where(np.sum(d, 0)>0)[0]+2, [-2, -1]])
+        mat = mat[:,dd]
+
+    if args['inverse'] :
+        mat = mat.T
+        
+    for m in mat :
+        print '\t'.join(m)
 
 if __name__ == '__main__' :
     report(sys.argv[1:], {})

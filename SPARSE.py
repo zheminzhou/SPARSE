@@ -100,9 +100,14 @@ def _extract(argv) :
 def _report(argv) :
     from modules.D1_sparse_parse import report
     parser = argparse.ArgumentParser(description='''Generate a flat-table report for multiple runs. Also tries to identify some potential human pathogens. ''', formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-l', '--level', help='Level to report, default: s. Details see documents for the seqlist format.', default='s')
+    parser.add_argument('-t', '--tag', help='Tag level to report, default: s. Details see documents for the seqlist format.', default='s')
     parser.add_argument('--absolute', help='Report absolute numbers. Default: False (report percentages)', action='store_true', default=False)
-    parser.add_argument('--low', help='Lower limit of percentage for a value to report. Default: 0.0', default=0., type=float)
+    parser.add_argument('-l', '--low', help='Lower limit of percentage for a value to report. Default: 0.0', default=0., type=float)
+    
+    parser.add_argument('-r', '--speciesFilter', help='Show only species listed in the file.', default=None)
+    parser.add_argument('-c', '--sampleFilter', help='Show only samples that have hits in the listed species. Default: False', default=False, action='store_true')
+    
+    parser.add_argument('-v', '--inverse', help='Inverse the output matrix such that columns are species and rows are samples.', default=False, action='store_true')
     parser.add_argument('workspaces', metavar='workspace', nargs='+', help='Folders that contain "SPARSE extract" outputs. REQUIRED at least one folder.')
     args = parser.parse_args(argv)
     report(args.workspaces, args.__dict__)
