@@ -137,7 +137,12 @@ def report(fnames, args) :
     taxa = {'Unknown':['Dark Matter', 0.]}
     levels = args.get('tag', 's').split(',')
     data = {}
-    fnames = [ fname if os.path.isfile(fname) else os.path.join(fname, 'profile.txt') for fname in fnames ]
+    fnames = [fname for fname in [ fname if os.path.isfile(fname) else os.path.join(fname, 'profile.txt') for fname in fnames ] if os.path.isfile(fname)]
+    if args.get('path', None) :
+        for path, subdirs, files in os.walk(args['path']) :
+            for fname in files :
+                if fname == 'profile.txt' :
+                    fnames.append(os.path.join(path, fname))
     for fname in fnames :
         data[fname] = {}
         with open(fname) as fin :
