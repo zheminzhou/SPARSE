@@ -1,7 +1,7 @@
 import sys, os, math, re, numpy as np
 
 def readSpeciesFilter(fname) :
-    f = {fname:'*'}
+    f = {}
     if os.path.isfile(fname) :
         with open(fname) as fin :
             for line in fin :
@@ -10,6 +10,8 @@ def readSpeciesFilter(fname) :
                     f[part[0]] = '*'
                 else :
                     f[part[0]] = part[1]
+    else :
+        f[fname] = '*'
     return f
 def report(fnames, args) :
     pathogens = {
@@ -179,7 +181,7 @@ def report(fnames, args) :
             if re.findall(p, taxon) :
                 label = t
                 break
-        if label == 'non' and args['speciesFilter'] :
+        if label == 'non' and (args['speciesFilter'] or args['sampleFilter']) :
             continue
         try:
             species = taxa[group][0].split('|')[7] if taxa[group][0] != 'Dark Matter' else '-'
