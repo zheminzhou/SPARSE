@@ -47,10 +47,10 @@ def save2mash(inputs, codes, **params) :
                 to_merge[msh_db].append(fmsh)
     for db, infiles in to_merge.iteritems() :
         if os.path.exists(db) :
-            subprocess.Popen('mash paste {0} {1} {2}'.format(db[:-4] + '.2', db, ' '.join(infiles)).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+            subprocess.Popen('{mash} paste {0} {1} {2}'.format(db[:-4] + '.2', db, ' '.join(infiles), **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
             shutil.move(db[:-4] + '.2.msh', db)
         else :
-            subprocess.Popen('mash paste {0} {1}'.format(db[:-4], ' '.join(infiles)).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+            subprocess.Popen('{mash} paste {0} {1}'.format(db[:-4], ' '.join(infiles), **params).split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
     return outputs
 
 def genotype_and_saving(inputs, pool, **params) :
@@ -121,11 +121,20 @@ def load_data(exist_db, new_data, **params) :
     entries['assembly_level'] = pd.Categorical(entries['assembly_level'], ['Complete Genome', 'Chromosome', 'Draft']).fillna('Draft')
     entries.version = pd.to_numeric(entries.version, errors='coerce').fillna(1).astype(np.int64)
     
+    update_rec = { r[0].rsplit('.', 1)[0]:r for r in entries[['assembly_accession', 'version', 'file_path', 'url_path']].values }
+    for row_id, r in existing.iterrows() :
+        acc = r['assembly_accession'].rsplit('.', 1)[0]
+        if acc in update_rec :
+            ur = update_rec[acc]
+            for id, tag in enumerate(['assembly_accession', 'version', 'file_path', 'url_path']) :
+                if str(ur[id]) != r[tag] and ur[id] != '-':
+                    r[tag] = str(ur[id])
+    existing.to_msgpack(exist_db)
     cur_rec = {rr:id \
-               for id, r in enumerate(existing[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
+               for id, r in enumerate(existing[['assembly_accession', 'file_path', 'url_path']].values) \
                for rr in r if rr != '-'}
     novel_ids = [id \
-                 for id, r in enumerate(entries[['assembly_accession', 'file_path', 'url_path']].as_matrix()) \
+                 for id, r in enumerate(entries[['assembly_accession', 'file_path', 'url_path']].values) \
                  if r[0] not in cur_rec and r[1] not in cur_rec and r[2] not in cur_rec ]
     
     entries = entries.loc[novel_ids].sort_values(by=['refseq_category', 'assembly_level', 'version',  'assembly_accession'], ascending=[True, True, False,  True]).reset_index(drop=True)
@@ -135,7 +144,7 @@ def load_data(exist_db, new_data, **params) :
     return existing, entries
 
 def add_taxa_col(data, **params) :
-    taxids = np.unique(data['taxid'].as_matrix())
+    taxids = np.unique(data['taxid'].values)
     if np.sum(taxids[taxids != '-'].astype(int) > 0) == 0 :
         return data
     
@@ -146,7 +155,7 @@ def add_taxa_col(data, **params) :
             taxa[r][t] = i
 
     for r in params['taxa_columns'] :
-        data[r] = [ (taxa[r].get(tid, ori) if ori == '-' else ori) for tid, ori in data[['taxid', r]].as_matrix() ]
+        data[r] = [ (taxa[r].get(tid, ori) if ori == '-' else ori) for tid, ori in data[['taxid', r]].values ]
     return data
 
 def mash_proc(data) :
@@ -199,14 +208,14 @@ def db_index(params) :
     phylum_order = [(m[0] not in ('Archaea', 'Bacteria') )*100 + \
                     (m[1] in ('Metazoa', 'Viridiplantae','nan'))*10 + \
                     (m[2] in ('nan', 'Chordata', 'Arthropoda', 'Streptophyta', 'Echinodermata', 'Platyhelminthes', 'Mollusca')) \
-                    for m in entries[ params['taxa_columns'][-1:-4:-1] ].as_matrix()]
+                    for m in entries[ params['taxa_columns'][-1:-4:-1] ].values]
     entries = entries.loc[np.argsort(phylum_order, kind='mergesort')].reset_index(drop=True)
     
-    index_id = max(existing['index'].as_matrix().astype(int))+1 if existing.shape[0] > 0 else 0
+    index_id = max(existing['index'].values.astype(int))+1 if existing.shape[0] > 0 else 0
 
     pool, batches = Pool(params['n_thread']), params['n_thread']*3
     
-    sha_dict = {c:1 for c in existing['sha256'].as_matrix()}
+    sha_dict = {c:1 for c in existing['sha256'].values}
     sha_dict[''] = 1
     
     for group_id in np.arange(0, entries.shape[0], batches) :

@@ -9,7 +9,7 @@ SPARSE indexes >100,000 reference genomes in public databases in to hierarchical
 
 ## Installation 
 
-SPARSE runs on Unix and requires Python >= version 2.7
+SPARSE runs on Unix and requires Python version 2.7 (Python 3.x supports are under development)
 
 **System modules (Ubuntu 16.04) :**
 
@@ -28,7 +28,11 @@ SPARSE runs on Unix and requires Python >= version 2.7
 
 See [requirements.txt](requirements.txt) for python module dependencies. 
 
-### Installation (Ubuntu) 
+### Installation via PIP [Suggested]
+
+    pip install meta-sparse
+
+### Installation from source codes (Ubuntu) 
      
     sudo apt-get update
     sudo apt-get install gfortran llvm libncurses5-dev cmake python-pip samtools bowtie2
@@ -38,7 +42,11 @@ See [requirements.txt](requirements.txt) for python module dependencies.
     
 
 ### Updating SPARSE
-To update SPARSE, move to installation directory and pull the latest version:  
+You can update to latest version using PIP:
+```
+pip install --upgrade meta-sparse
+```
+If you installed SPARSE from github, move to installation directory and pull the latest version:  
 
     cd SPARSE
     git pull
@@ -49,12 +57,14 @@ See http://sparse.readthedocs.io/en/latest/ for full documentation.
 
 1. **Download reference database**
 
-We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to download at http://enterobase.warwick.ac.uk/sparse/
-   Please download the complete folder refseq_20171014/ and do not change its internal folder structure. The database can be unpacked by running:
+We provide a pre-compiled database based on RefSeq (dated 19.05.2018) to download at http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+. The database can be downloaded and unpacked by running:
    ```
-   cd refseq_20171014 && sh untar.bash
+    curl -o refseq_20180519.tar.gz http://enterobase.warwick.ac.uk/sparse/refseq_20180519.tar.gz
+    tar -vxzf refseq_20180519.tar.gz
    ```
-   This pre-compiled database contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
+   
+   This pre-compiled database is about 350GB and contains four default mapping databases, which can be specified in the next step: representative, subpopulation, Virus, Eukaryota.
    
    To update the database or build a costum database, please refer to the full documentation.
    
@@ -62,13 +72,13 @@ We provide a pre-compiled database based on RefSeq (dated 14.10.2017) to downloa
 
 This following command will map and evaluate all reads in both fastq-files against the specified mapping databases. 
 ```
-python SPARSE.py predict --dbname refseq_20171014 --MapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
+sparse predict --dbname refseq_20180519 --mapDB representative,subpopulation,Virus,Eukaryota --r1 read1.fq.gz --r2 read2.fq.gz --workspace <workspace_name>
 ```
 For single-end reads, only --r1 needs to be specified. All output files are stored in the respective workspace.
 
 3. **Create a report**
 ```
-python SPARSE.py report <workspace_name>
+sparse report <workspace_name>
 ```
 The report will be stored in <workspace_name>/profile.txt
 
@@ -76,12 +86,14 @@ The report will be stored in <workspace_name>/profile.txt
 
 The following command extracts all reads specific to the provided reference ids, which can be found in the output of step 2.
 ```
-python SPARSE.py SSR --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
+sparse extract --dbname refseq_20171014 --workspace <workspace_name> --ref_id <comma delimited indices>
 ```
 
 
 
 ## Citation
-SPARSE has not been formally published yet. If you use SPARSE please cite the preprint https://www.biorxiv.org/content/early/2017/11/07/215707
+SPARSE is published as a conference proceeding in "Research in Computational Molecular Biology".
 
-Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman, 'Accurate Reconstruction of Microbial Strains Using Representative Reference Genomes' bioRxiv 215707; doi: https://doi.org/10.1101/215707
+Zhemin Zhou, Nina Luhmann, Nabil-Fareed Alikhan, Christopher Quince, Mark Achtman, 'Accurate Reconstruction of Microbial Strains from Metagenomic Sequencing Using Representative Reference Genomes' RECOMB 2018: Research in Computational Molecular Biology pp 225-240. doi: https://doi.org/10.1007/978-3-319-89929-9_15
+
+A preprint version of the manuscript is also accessible in bioRxiv: https://doi.org/10.1101/215707

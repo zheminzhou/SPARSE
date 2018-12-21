@@ -26,7 +26,7 @@ def query_sample(params) :
         result, r_id = result[(1-r_id >= 0.98* (1-r_id[0])) & (r_id <= params['barcode_dist'][0])], r_id[(1-r_id >= 0.98* (1-r_id[0])) & (r_id <= params['barcode_dist'][0])]
 
         groups = {}
-        m = {'a'+k:[n, a] for k, n, a in data[['index', 'organism_name', 'assembly_accession']].as_matrix()}
+        m = {'a'+k:[n, a] for k, n, a in data[['index', 'organism_name', 'assembly_accession']].values}
         matches = [ dict(record='.'.join(r), similarity=1-i, organism_name=m[r[-1]][0], assembly_accession=m[r[-1]][1]) for r, i in zip(result, r_id) ]
         for id, (dcut, dgroup) in enumerate(zip(params['barcode_dist'], result.T[:-1])) :
             dgroup[r_id > dcut] = ''

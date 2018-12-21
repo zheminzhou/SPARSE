@@ -79,7 +79,7 @@ def parse_mapping(database, seqinfo, maps, mismatch=0.05, HGT_prior=[[0.05, 0.99
     b2 =       np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
     barcodes = np.zeros(shape=[np.max(database['index'].astype(int))+1, len(next(database.itertuples()).barcode.split('.'))], dtype=int)
     barcodes.fill(-1)
-    b2[database['index'].as_matrix().astype(int)] = database['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist()
+    b2[database['index'].values.astype(int)] = database['barcode'].apply(lambda barcode:[int(b[1:]) for b in barcode.split('.')]).tolist()
     tax_ids = np.unique(maps.T[1]).astype(int)
     barcodes[tax_ids] = b2[tax_ids]
     
@@ -194,7 +194,18 @@ def summary_matrix(data, MapDB, workspace, bowtie_db, mismatch=0.05, n_thread=10
     print time.time()-o_t, "info prepared."
     sys.stdout.flush()
     
-    maps, seqinfo = np.vstack([np.load(mfile) for mfile in map_files]), np.vstack([np.load(sfile) for sfile in seq_files])
+    maps = []
+    for mfile in map_files :
+        t = np.load(mfile)
+        if t.size > 0 :
+            maps.append(t)
+    seqinfo = []
+    for sfile in seq_files :
+        t = np.load(sfile)
+        if t.size > 0 :
+            seqinfo.append(t)
+    maps = np.vstack(maps)
+    seqinfo = np.vstack(seqinfo)
 
     maps = parse_mapping(data, seqinfo, maps, mismatch)
     
@@ -215,11 +226,11 @@ def searchDBs(bowtie_db, MapDB) :
 def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=10, **params) :
     def convert_file(source, target) :
         with open(target, 'w') as fout :
-            fin = gzip.open(source) if r1.endswith('gz') else open(source)
+            fin = gzip.open(source) if source.endswith('gz') else open(source)
             line = fin.readline()
             fin.close()
-            fin = gzip.open(source) if r1.endswith('gz') else open(source)
             if line.startswith('>') :
+                fin = gzip.open(source) if source.endswith('gz') else open(source)
                 line_id, seq = 0, []
                 for line in fin :
                     if line.startswith('>') :
@@ -232,10 +243,12 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                         seq.extend(line.strip().split())
                 seq = ''.join(seq)
                 fout.write('{0}\n+\n{1}\n'.format(seq, 'H' * len(seq)))
+                fin.close()
             else :
-                for id, line in enumerate(fin) :
-                    fout.write(line if id%4 else '@{0}\n'.format(id/4)) 
-            fin.close()
+                if source.endswith('gz') :
+                    subprocess.Popen("zcat "+source+"|awk '{if (NR%4 == 1) {print \"@\"int(NR/4)}else {print $0}}' > "+target, shell=True).communicate()
+                else :
+                    subprocess.Popen("awk '{if (NR%4 == 1) {print \"@\"int(NR/4)}else {print $0}}'" + " {0} > {1}".format(source, target), shell=True).communicate()
     db_list = searchDBs(bowtie_db, MapDB)
     # prepare databases
     if not os.path.isdir(workspace) :
@@ -251,17 +264,17 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
 
     convert_file(r1, os.path.join(workspace, 'r1.fastq'))
     if r2 is None :
-        read_info = '-U {0}'.format(os.path.join(workspace, 'r1.fastq'))
+        read_info = ' {0}'.format(os.path.join(workspace, 'r1.fastq'))
     else :
-        read_info = '-1 {0} -2 {1}'.format(os.path.join(workspace, 'r1.fastq'), os.path.join(workspace, 'r2.fastq'))
+        read_info = ' {0} {1}'.format(os.path.join(workspace, 'r1.fastq'), os.path.join(workspace, 'r2.fastq'))
         convert_file(r2, os.path.join(workspace, 'r2.fastq'))
             
     # run bowtie2 in multiple threads
     for db_prefix in db_list :
         out_prefix = os.path.join(workspace, db_prefix.rsplit('/', 1)[-1])
-        if os.path.isfile(db_prefix+'.4.bt2') :
-            cmd_bt2 = '{0} -k 300 --no-unal --ignore-quals --score-min L,20,1.1 --mp 4,4 --np 4 --sensitive-local -q -p {2} -I 25 -X 800 -x {3} {1}'.format(
-                params['bowtie2'], read_info, n_thread, db_prefix)
+        if os.path.isfile(db_prefix+'.mmi') :
+            cmd_bt2 = '{0} -t{2} -a -k13 -2K10M -w5 --sr -A2 -B4 -O8,16 -E2,1 -r50 -p.2 -N500 -f2000,10000 -n1 -m21 -s50 -g200 --heap-sort=yes --secondary=yes {3}.mmi {1}'.format(
+                params['minimap2'], read_info, n_thread, db_prefix)
             run_bt2 = subprocess.Popen(cmd_bt2.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
             prev, res, seq_info = {}, [], []
@@ -277,26 +290,23 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                                              seqs[name][0]] )     # tax ID
                 else :
                     part = line.strip().split()
-                    if part[2] in seqs :
+                    if part[2] in seqs and part[5] != '*':
                         key = (part[0], int(part[1]) & 128)
-                        key2 = (part[0], 128-key[1])
                         if key not in prev:
-                            if key2 not in prev :
-                                prev = {key:{}}
-                            else :
-                                prev[key] = {}
+                            prev = {key:{}}
                             
                         if seqs[part[2]][0] not in prev[key] :
-                            s = [int(l) for l in re.findall('(\d+)S', part[5])]
+                            s = [int(l) for l in re.findall('(\d+)[SH]', part[5])]
                             if sum(s) > 100 or sum(s) * 2 >= len(part[9]) or (len(s) > 1 and min(s) > 4) :
                                 continue
                             else :
                                 prev[key][seqs[part[2]][0]] = 1
                         else :
                             continue
-                        score = int(part[11][5:]) + (0 if len(s) == 0 else max(s)*1.5)
-                        mut = (len(part[9])*2 - score)/6.0
-                        nom = len(part[9]) - mut
+                        score = int(part[13][5:]) + (0 if len(s) == 0 else max(s)*1.5)
+                        rlen = len(part[9]) if int(part[1]) < 256 else sum([int(l) for l in re.findall('(\d+)[SHMI]', part[5])])
+                        mut = (rlen*2 - score)/6.0
+                        nom = rlen - mut
                         res.append([ int(part[0]),        # read ID
                                      seqs[part[2]][0],    # taxa ID
                                      seqs[part[2]][1],    # seq ID
@@ -312,7 +322,7 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
                 
                 prev, res, seq_info = {}, [], []
                 used_names = {}
-                with gzip.open(out_prefix+'.tmp.gz') as fin :
+                with subprocess.Popen(['zcat', out_prefix+'.tmp.gz'], stdout=PIPE).stdout as fin :
                     for line in fin :
                         if line.startswith('@') :
                             if line.startswith('@SQ') :
@@ -502,7 +512,7 @@ def assign_reads(data, qvector, workspace, **params) :
     maps.T[4] = 100.0*maps.T[4]/(maps.T[4] + maps.T[5])
     maps.T[5] = 100.0*(aln_mut/aln_len)[maps.T[1].astype(int)+1]
     
-    cls_map = np.bincount( data['index'].astype(int)+1, data['barcode'].apply(lambda barcode:int(barcode.split('.')[0][1:])).as_matrix() ).astype(int)
+    cls_map = np.bincount( data['index'].astype(int)+1, data['barcode'].apply(lambda barcode:int(barcode.split('.')[0][1:])).values ).astype(int)
     cls_cnt = maps[:, [1,10,9]]
     cls_cnt = cls_cnt[cls_cnt.T[2]>0.001]
     cls_cnt.T[0] = cls_map[cls_cnt.T[0].astype(int)+1]
@@ -555,7 +565,7 @@ def match_group(data, match_ref, **params) :
         groups[g] = [{'':0} for c in params['taxa_columns'] ] 
         ref = pgroup[pgroup.T[1]==g, 0]
         d = data.loc[data['index'].isin(ref)]
-        for part in d[['index', 'barcode'] + list(reversed(params['taxa_columns']))].as_matrix() :
+        for part in d[['index', 'barcode'] + list(reversed(params['taxa_columns']))].values :
             index, barcode, taxa = part[0], part[1], part[2:]
             for t, gg in zip(taxa, groups[g]) :
                 if not (t in ('', '-') and t.startswith('*')):
@@ -568,7 +578,7 @@ def match_group(data, match_ref, **params) :
                            np.sum(assign[assign.T[0] <= 2., 1]), \
                            np.sum(assign[assign.T[0] <= 1., 1]), \
                         ]
-        barcodes = data.loc[data['index'] == idx]['barcode'].as_matrix()[0].split('.')
+        barcodes = data.loc[data['index'] == idx]['barcode'].values[0].split('.')
         for grp, abnd in zip (['~' + barcodes[0][1:]] + barcodes[:4], level_abundance) :
             if abnd <= 0 : continue
             if grp not in results :
@@ -588,7 +598,7 @@ def match_group(data, match_ref, **params) :
             else :
                 taxonomy.append(cnts[0][0])
         if label.startswith('p') :
-            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == content[1][0], ['organism_name', 'assembly_accession']].as_matrix().tolist()[0]) )
+            taxonomy.append( '{0[0]}: {0[1]}'.format(data.loc[data['index'] == content[1][0], ['organism_name', 'assembly_accession']].values.tolist()[0]) )
         elif label.startswith('s') :
             taxonomy = taxonomy[:-1]
         elif label.startswith('u') :

@@ -13,7 +13,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='meta-sparse',  
-    version= '0.1.1',  
+    version= '0.1.12',
     description='SPARSE indexes reference genomes in public databases into hierarchical clusters and uses it to predict origins of metagenomic reads.',
     long_description=long_description, 
     long_description_content_type='text/markdown',  
@@ -25,10 +25,6 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
     ],
 #    py_modules=['SPARSE', 'parameter'],
     entry_points={
@@ -48,7 +44,7 @@ setup(
     ]},
     packages = ['SPARSE'], 
     package_dir = {'SPARSE':'.'},
-    install_requires=['pycapnp', 'numpy', 'pandas', 'Cython', 'scipy', 'msgpack'],
+    install_requires=['pycapnp==0.6.1', 'numpy==1.13.3', 'pandas==0.23.0', 'Cython', 'scipy==1.0.0', 'msgpack-python==0.4.8', 'msgpack==0.5.6'],
     include_package_data=True,
     project_urls={ 
         'Bug Reports': 'https://github.com/zheminzhou/SPARSE/issues',

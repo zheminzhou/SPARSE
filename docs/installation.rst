@@ -4,6 +4,12 @@ Installation guide
 
 SPARSE runs on Unix and requires Python >= version 2.7
 
+**hardware**
+
+* SPASE runs best in multi-processes mode. Thus servers with at least 10-20 CPU cores were suggested. 
+* >= 300 GBytes of memory is required to handle over 10 million metagenomic reads. 
+* >= 500 GBytes of storage space. 
+
 **System modules (Ubuntu 16.04):**
 
 * pip
@@ -22,7 +28,15 @@ SPARSE runs on Unix and requires Python >= version 2.7
 
 See requirements.txt for python module dependencies. 
 
-Installation instructions (Ubuntu)
+Installation via PIP
+--------------------
+
+.. code-block:: bash
+
+    pip install meta-sparse
+
+
+Install from source files (Ubuntu)
 ----------------------------------
 
 .. code-block:: bash
