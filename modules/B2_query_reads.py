@@ -266,7 +266,7 @@ def bowtie2matrix(bowtie_db, MapDB, workspace, mismatch, r1, r2=None, n_thread=1
             
             prev, res, seq_info = {}, [], []
             used_names = {}
-            for line in iter(run_bt2.stdout.readline, r'') :
+            for line in run_bt2.stdout :
                 if line.startswith('@') :
                     if line.startswith('@SQ') :
                         name, seq_len = [ p[3:] for p in line.strip().split()[1:3] ]

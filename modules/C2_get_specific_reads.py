@@ -18,8 +18,10 @@ def get_SSR(params) :
             if len(part) < 3 :
                 continue
             ref_map = part[4].split(':')
-            if float(part[2]) > 0 and ref_map[0] in ref_ids and float(ref_map[1]) >= params['ratio'] :
-                read_ids[part[0]] = [part[1], part[4]]
+            if float(part[2]) > 0 and ref_map[0] in ref_ids :
+                r = sum([ float(p.split(':')[1]) for p in part[4: ])
+                if r >= params['ratio'] :
+                    read_ids[part[0]] = [part[1], part[4]]
     
     for readseq, output in zip(readseqs, outputs) :
         with gzip.open(readseq) as fin, gzip.open(output, 'w') as fout :
