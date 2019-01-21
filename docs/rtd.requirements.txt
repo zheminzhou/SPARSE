@@ -12,7 +12,7 @@ mock==2.0.0
 msgpack-python==0.5.6
 numpy==1.16.0
 pandas==0.23.4
-pbr==3.1.1
+pbr==5.1.1
 py==1.4.34
 Pygments==2.2.0
 pytest==3.2.3
