@@ -12,7 +12,7 @@ mock==2.0.0
 msgpack==0.5.6
 msgpack-python==0.5.6
 numpy
-pandas==0.23.0
+pandas==0.23.4
 pbr==3.1.1
 py==1.4.34
 pycapnp==0.6.1
