@@ -15,7 +15,7 @@ numpy==1.16.0
 pandas==0.23.4
 pbr==5.1.1
 py==1.7.0
-pycapnp==0.6.3
+pycapnp==0.6.4
 Pygments==2.3.1
 pytest==4.1.1
 python-dateutil==2.7.5
